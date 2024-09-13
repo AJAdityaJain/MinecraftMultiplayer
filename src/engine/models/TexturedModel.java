@@ -2,25 +2,30 @@ package engine.models;
 
 public class TexturedModel {
 
-	private final int vaoID;
-	private final int vertexCount;
+	private final VAO vao;
 	private final int textureID;
 	
-	public TexturedModel(int vaoID, int vertexCount,int texture){
-		this.vaoID = vaoID;
-		this.vertexCount = vertexCount;
+	public TexturedModel(VAO vao,int texture){
+		this.vao = vao;
 		this.textureID = texture;
+	}
+	public void bind(){
+		vao.bind(textureID);
+	}
+	public void unbind(){
+		vao.unbind();
+	}
+
+	public void render(){
+		vao.render();
 	}
 
 	public int getTextureID() {
 		return textureID;
 	}
 
-	public int getVaoID() {
-		return vaoID;
+	public VAO getVao() {
+		return vao;
 	}
 
-	public int getVertexCount() {
-		return vertexCount;
-	}
 }

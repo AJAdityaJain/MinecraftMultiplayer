@@ -41,7 +41,7 @@ public abstract class ShaderProgram {
 		GL20.glUseProgram(programID);
 	}
 	
-	public void stop(){
+	public void  stop(){
 		GL20.glUseProgram(0);
 	}
 	
