@@ -17,13 +17,13 @@ public class Chunk {
     //16x(16x16)
 
     public Chunk(int x , int y, int z) {
-        chunkX = x * CHUNK_SIZE;
-        chunkY = y * CHUNK_SIZE;
-        chunkZ = z * CHUNK_SIZE;
+        chunkX = x;
+        chunkY = y;
+        chunkZ = z;
         dictionary.add(new BlockState(BlockState.BlockEnum.AIR));
         dictionary.add(new BlockState(BlockState.BlockEnum.STONE));
         dictionary.add(new BlockState(BlockState.BlockEnum.DIRT));
-        Random rand = new Random();
+        new Random();
         for(int i = 0; i < CHUNK_SIZE; i++) {
             for(int j = 0; j < CHUNK_SIZE; j++) {
                 for(int k = 0; k < CHUNK_SIZE; k++) {
@@ -31,7 +31,8 @@ public class Chunk {
                         blocks[i][j][k] = 1;
                     } else if(j < 9) {
                         blocks[i][j][k] = 2;
-                    }  else if(j < 10 &&  rand.nextInt(2) == 0) {
+//                    }  else if(j < 10 &&  rand.nextInt(2) == 0) {
+                    }  else if(j < 10 && (i > 6 && i < 10 && k > 6 && k < 10)) {
                         blocks[i][j][k] = 2;
                     }
                     else {
@@ -45,13 +46,9 @@ public class Chunk {
 
     public BlockState getBlock(int x, int y, int z) {
         if(x < 0 || x >= 16 || y < 0 || y >= 16 || z < 0 || z >= 16) {
-            return dictionary.get(1);
+            return new BlockState(BlockState.BlockEnum.NONE);
         }
         return dictionary.get(blocks[x][y][z]);
-    }
-
-    public boolean isAir(int x, int y, int z) {
-        return getBlock(x, y, z).blockType == BlockState.BlockEnum.AIR;
     }
 
 }

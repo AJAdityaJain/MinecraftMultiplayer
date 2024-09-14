@@ -9,9 +9,9 @@ import engine.models.Loader;
 import engine.rendering.Renderer;
 import engine.shader.StaticShader;
 import entities.Camera;
- import server.block.Chunk;
+import server.block.Map;
 
- public class Main {
+public class Main {
 	public static void main(String[] args) {
 
 		DisplayManager.createDisplay();
@@ -20,26 +20,37 @@ import entities.Camera;
 
 		int TextureArrayID = Loader.loadTexture();
 //		Loader.loadAtlas();
-		Chunk chunk = new Chunk(0,0,0);
-		StaticEntity world = new StaticEntity(Mesh.genGreedyMeshFromChunk(chunk), new Vector3f(0,0,-5));
+		Map world = new Map();
+		StaticEntity world_mesh = new StaticEntity(Mesh.genGreedyMeshFromChunk(world), new Vector3f(0,0,0));
 
-		System.gc();
 
 		Camera camera = new Camera();
 		shader.start();
-		world.model.bind();
+		world_mesh.model.bind();
+
+		long time = System.currentTimeMillis();
+		int frame_idx = 0;
+		int samples = 1000;
+
 		while(!Display.isCloseRequested()){
 			camera.move();
 
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT|GL11.GL_DEPTH_BUFFER_BIT);
 				shader.loadViewMatrix(camera);
-				renderer.render(world,shader);
+				renderer.render(world_mesh,shader);
 
 			DisplayManager.updateDisplay();
+			frame_idx++;
+			if(frame_idx == samples){
+				long new_time = System.currentTimeMillis();
+				Display.setTitle("FPS: " + Math.round((1000.0f * samples) / (new_time - time)));
+				time = new_time;
+				frame_idx = 0;
+			}
 		}
 
-		world.model.unbind();
-		world.model.clean();
+		world_mesh.model.unbind();
+		world_mesh.model.clean();
 		shader.stop();
 		shader.cleanUp();
 		Loader.cleanUp();

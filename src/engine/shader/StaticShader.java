@@ -8,8 +8,8 @@ import entities.Camera;
 
 public class StaticShader extends ShaderProgram{
 	
-	private static final String VERTEX_FILE = "src/engine/shader/vertexShader.txt";
-	private static final String FRAGMENT_FILE = "src/engine/shader/fragmentShader.txt";
+	private static final String VERTEX_FILE = "src/engine/shader/vertexShader.glsl";
+	private static final String FRAGMENT_FILE = "src/engine/shader/fragmentShader.glsl";
 	
 	private int location_transformationMatrix;
 	private int location_projectionMatrix;

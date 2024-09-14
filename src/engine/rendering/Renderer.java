@@ -3,7 +3,6 @@ package engine.rendering;
 
 import engine.models.VAO;
 import entities.DynamicEntity;
-import entities.Entity;
 import entities.StaticEntity;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Matrix4f;

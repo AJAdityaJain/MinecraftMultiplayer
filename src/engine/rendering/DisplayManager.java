@@ -4,7 +4,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.*;
 
 public class DisplayManager {
-	private static final int FPS_CAP = 400;
+	private static final int FPS_CAP = 120;
 	public static final int WIDTH = 1920;
 	public static final int HEIGHT = 1080;
 	public static final int WIDTH_HALF = WIDTH/2;
@@ -38,7 +38,6 @@ public class DisplayManager {
 	
 	public static void updateDisplay(){
 		
-		Display.sync(FPS_CAP);
 		Display.update();
 		
 	}

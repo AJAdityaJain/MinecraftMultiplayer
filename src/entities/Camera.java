@@ -3,19 +3,15 @@ package entities;
 import engine.rendering.DisplayManager;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.util.Display;
 import org.lwjgl.util.vector.Vector3f;
-
-import java.security.Key;
 
 import static engine.util.Maths.TAU;
 
 public class Camera {
 	
-	private final Vector3f position = new Vector3f(0,0,0);
+	private final Vector3f position = new Vector3f(0,16,0);
 	private float pitch;
-	private float yaw;
-	private float roll;
+	private float yaw = 160 * 3.14f/180;
 
 	private boolean inGame = true;
 
@@ -71,10 +67,6 @@ public class Camera {
 
 	public float getYaw() {
 		return yaw;
-	}
-
-	public float getRoll() {
-		return roll;
 	}
 
 }

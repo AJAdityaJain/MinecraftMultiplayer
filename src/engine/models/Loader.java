@@ -110,7 +110,8 @@ public class Loader {
 
 		return vao;
 	}
-	private static int storeDataInAttributeList(int attributeNumber, int coordinateSize, float[] data){
+	@SuppressWarnings("SameParameterValue")
+    private static int storeDataInAttributeList(int attributeNumber, int coordinateSize, float[] data){
 		int vboID = GL15.glGenBuffers();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
 
