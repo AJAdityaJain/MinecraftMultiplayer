@@ -1,18 +1,17 @@
 package entities;
 
-import engine.models.TexturedModel;
-
+import engine.models.VAO;
 import org.lwjgl.util.vector.Vector3f;
 
 public class Entity {
 
-	private TexturedModel model;
+	public final VAO model;
 	private Vector3f position;
 	private float rotX, rotY, rotZ;
 	private float scale;
 
-	public Entity(TexturedModel model, Vector3f position, float rotX, float rotY, float rotZ,
-			float scale) {
+	public Entity(VAO model, Vector3f position, float rotX, float rotY, float rotZ,
+				  float scale) {
 		this.model = model;
 		this.position = position;
 		this.rotX = rotX;
@@ -31,14 +30,6 @@ public class Entity {
 		this.rotX += dx;
 		this.rotY += dy;
 		this.rotZ += dz;
-	}
-
-	public TexturedModel getModel() {
-		return model;
-	}
-
-	public void setModel(TexturedModel model) {
-		this.model = model;
 	}
 
 	public Vector3f getPosition() {

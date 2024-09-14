@@ -39,7 +39,6 @@ public abstract class ShaderProgram {
 	
 	public void start(){
 		GL20.glUseProgram(programID);
-		GL20.glUniform1i(GL20.glGetUniformLocation(programID, "tex"), 1);
 	}
 	
 	public void  stop(){

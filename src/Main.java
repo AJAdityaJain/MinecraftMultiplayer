@@ -1,6 +1,4 @@
- import engine.models.TexturedModel;
-
- import engine.util.Mesh;
+import engine.util.Mesh;
  import org.lwjgl.opengl.Display;
  import org.lwjgl.opengl.GL11;
  import org.lwjgl.util.vector.Vector3f;
@@ -20,20 +18,15 @@ import entities.Entity;
 		StaticShader shader = new StaticShader();
 		Renderer renderer = new Renderer(shader);
 
-		Loader.loadAtlas();
+		int TextureArrayID = Loader.loadTexture();
+//		Loader.loadAtlas();
 		Chunk chunk = new Chunk(0,0,0);
 		Mesh mesh = new Mesh();
 
-		TexturedModel staticModel = new TexturedModel(
-				mesh.genGreedyMeshFromChunk(chunk),
-//				Loader.createVAO(vertices,textureCoords,indices),
-				Loader.loadTexture("stone")
-		);
-
-		Entity entity = new Entity(staticModel, new Vector3f(0,0,-5),0,0,0,1);
+		Entity entity = new Entity(mesh.genGreedyMeshFromChunk(chunk), new Vector3f(0,0,-5),0,0,0,1);
 		Camera camera = new Camera();
 		shader.start();
-		staticModel.bind();
+		entity.model.bind();
 
 		while(!Display.isCloseRequested()){
 			entity.increaseRotation(.001f, 0, 0);
@@ -41,12 +34,13 @@ import entities.Entity;
 
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT|GL11.GL_DEPTH_BUFFER_BIT);
 				shader.loadViewMatrix(camera);
-				renderer.render(staticModel,entity.getPosition(),entity.getRotX(),entity.getRotY(),entity.getRotZ(),entity.getScale(),shader);
+				renderer.render(entity,shader);
 
 			DisplayManager.updateDisplay();
 		}
 
-		staticModel.unbind();
+		entity.model.unbind();
+		entity.model.clean();
 		shader.stop();
 		shader.cleanUp();
 		Loader.cleanUp();

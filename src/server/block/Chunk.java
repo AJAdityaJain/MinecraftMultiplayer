@@ -9,10 +9,10 @@ public class Chunk {
 
 
     private final byte[][][] blocks = new byte[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-    public int chunkX, chunkY, chunkZ;
+    public final int chunkX, chunkY, chunkZ;
 
     //Max size 256
-    public ArrayList<BlockState> dictionary = new ArrayList<>();
+    public final ArrayList<BlockState> dictionary = new ArrayList<>();
     //16x(16x16)
 
     public Chunk(int x , int y, int z) {
@@ -21,12 +21,13 @@ public class Chunk {
         chunkZ = z * CHUNK_SIZE;
         dictionary.add(new BlockState(BlockState.BlockEnum.AIR));
         dictionary.add(new BlockState(BlockState.BlockEnum.STONE));
+        dictionary.add(new BlockState(BlockState.BlockEnum.DIRT));
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 5; j++) {
-//                if(i == 2 && j == 2)
-//                    blocks[i][0][j] = 0;
-//                else
+                if(i == 2 && j == 2 || i == 3 && j == 2)
+                    blocks[i][0][j] = 2;
+                else
                     blocks[i][0][j] = 1;
             }
         }

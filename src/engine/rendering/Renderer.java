@@ -1,7 +1,8 @@
 package engine.rendering;
 
 
-import engine.models.TexturedModel;
+import engine.models.VAO;
+import entities.Entity;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Matrix4f;
 
@@ -27,7 +28,10 @@ public class Renderer {
 		shader.stop();
 	}
 
-	public void render(TexturedModel model, Vector3f position, float rx, float ry, float rz, float scale, StaticShader shader) {
+	public void render(Entity entity, StaticShader shader){
+		render(entity.model, entity.getPosition(), entity.getRotX(), entity.getRotY(), entity.getRotZ(), entity.getScale(), shader);
+	}
+	public void render(VAO model, Vector3f position, float rx, float ry, float rz, float scale, StaticShader shader) {
 		shader.loadTransformationMatrix(
 				Maths.createTransformationMatrix(
 						position,rx, ry, rz, scale

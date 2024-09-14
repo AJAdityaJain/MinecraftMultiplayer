@@ -1,13 +1,13 @@
 #version 330 core
 
-in vec2 pass_textureCoordinates;
+in vec3 uv;
 
 out vec4 out_Color;
 
-uniform sampler2D tex;
+uniform sampler2DArray tex_arr;
 
 void main(void){
 
-	out_Color = texture(tex,pass_textureCoordinates);
+	out_Color = texture(tex_arr,uv);
 
 }
