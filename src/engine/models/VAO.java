@@ -3,12 +3,19 @@ package engine.models;
 import org.lwjgl.opengl.*;
 
 public class VAO{
-    int vaoID;
-    int eboID;
-    int vboPosID;
-    int vboTexID;
-    int indicesCount;
+    private final int vaoID;
+    private final int eboID;
+    private final int vboPosID;
+    private final int vboTexID;
+    private final int indicesCount;
 
+    public VAO(int vaoID, int eboID, int vboPosID, int vboTexID, int indicesCount){
+        this.vaoID = vaoID;
+        this.eboID = eboID;
+        this.vboPosID = vboPosID;
+        this.vboTexID = vboTexID;
+        this.indicesCount = indicesCount;
+    }
 
     public void bind(){
 

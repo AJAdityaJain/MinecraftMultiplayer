@@ -92,16 +92,18 @@ public class Loader {
 	}
 
 	public static VAO createVAO(float[] positions, float[] textureCoords, int[] indices){
-		VAO vao = new VAO();
 
 		int vaoID = GL30.glGenVertexArrays();
-		vao.vaoID = vaoID;
+
 		GL30.glBindVertexArray(vaoID);
 
-		vao.eboID = bindIndicesBuffer(indices);
-		vao.vboPosID = storeDataInAttributeList(0,3,positions);
-		vao.vboTexID = storeDataInAttributeList(1,3,textureCoords);
-		vao.indicesCount = indices.length;
+		VAO vao = new VAO(
+				vaoID,
+				bindIndicesBuffer(indices),
+				storeDataInAttributeList(0,3,positions),
+				storeDataInAttributeList(1,3,textureCoords),
+				indices.length
+		);
 
 		GL30.glBindVertexArray(0);
 		vaos.add(vao);

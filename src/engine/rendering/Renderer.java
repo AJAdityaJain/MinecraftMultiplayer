@@ -2,7 +2,9 @@ package engine.rendering;
 
 
 import engine.models.VAO;
+import entities.DynamicEntity;
 import entities.Entity;
+import entities.StaticEntity;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Matrix4f;
 
@@ -28,9 +30,20 @@ public class Renderer {
 		shader.stop();
 	}
 
-	public void render(Entity entity, StaticShader shader){
-		render(entity.model, entity.getPosition(), entity.getRotX(), entity.getRotY(), entity.getRotZ(), entity.getScale(), shader);
+	public void render(StaticEntity entity, StaticShader shader){
+		shader.loadTransformationMatrix(
+				Maths.createSimpleTransformationMatrix(entity.getPosition())
+		);		entity.model.render();
 	}
+	public void render(DynamicEntity entity, StaticShader shader){
+		shader.loadTransformationMatrix(
+				Maths.createTransformationMatrix(
+						entity.getPosition(),entity.getRotX(), entity.getRotY(), entity.getRotZ(), entity.getScale()
+				)
+		);
+		entity.model.render();
+	}
+
 	public void render(VAO model, Vector3f position, float rx, float ry, float rz, float scale, StaticShader shader) {
 		shader.loadTransformationMatrix(
 				Maths.createTransformationMatrix(

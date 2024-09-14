@@ -38,13 +38,10 @@ class Face{
 }
 
 public class Mesh {
-    final List<Face> faces;
+    private static final List<Face> faces = new ArrayList<>();
 
-    public Mesh() {
-        this.faces = new ArrayList<>();
-    }
-
-    public VAO genGreedyMeshFromChunk(Chunk c) {
+    public static VAO genGreedyMeshFromChunk(Chunk c) {
+        faces.clear();
         byte[][][] visited = new byte[16][16][16];
 
         for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -227,7 +224,7 @@ public class Mesh {
 
             }
 
-            System.out.println(f.x + " " + f.y + " " + f.z + " " + f.width + " " + f.height + " " + f.faceType.name());
+//            System.out.println(f.x + " " + f.y + " " + f.z + " " + f.width + " " + f.height + " " + f.faceType.name());
             v+= 12;
             t+= 12;
             i += 6;
@@ -235,7 +232,7 @@ public class Mesh {
         return Loader.createVAO(vertices,textureCoords,indices);
     }
 
-    private void yAxisSearch(Chunk chunk, byte[][][] visited, int start_x, int start_y, int start_z, FaceType faceType) {
+    private static void yAxisSearch(Chunk chunk, byte[][][] visited, int start_x, int start_y, int start_z, FaceType faceType) {
         int dir = faceType == FaceType.TOP ? 1 : -1;
         BlockState block = chunk.getBlock(start_x, start_y, start_z);
         if (block.blockType != BlockState.BlockEnum.AIR && chunk.isAir(start_x, start_y + dir, start_z)) {
@@ -272,7 +269,7 @@ public class Mesh {
         }
 
     }
-    private void xAxisSearch(Chunk chunk, byte[][][] visited, int start_x, int start_y, int start_z, FaceType faceType) {
+    private static void xAxisSearch(Chunk chunk, byte[][][] visited, int start_x, int start_y, int start_z, FaceType faceType) {
         int dir = faceType == FaceType.RIGHT ? 1 : -1;
         BlockState block = chunk.getBlock(start_x, start_y, start_z);
 
@@ -309,7 +306,7 @@ public class Mesh {
 
         }
     }
-    private void zAxisSearch(Chunk chunk, byte[][][] visited, int start_x, int start_y, int start_z, FaceType faceType) {
+    private static void zAxisSearch(Chunk chunk, byte[][][] visited, int start_x, int start_y, int start_z, FaceType faceType) {
         int dir = faceType == FaceType.FRONT ? 1 : -1;
         BlockState block = chunk.getBlock(start_x, start_y, start_z);
         if (block.blockType != BlockState.BlockEnum.AIR && chunk.isAir(start_x, start_y, start_z + dir)) {
@@ -346,7 +343,7 @@ public class Mesh {
         }
     }
 
-    private void addUV(float[] textureCoords, Face f, int t, int slice) {
+    static void addUV(float[] textureCoords, Face f, int t, int slice) {
         textureCoords[t] = f.width;
         textureCoords[t + 1] = f.height;
         textureCoords[t + 2] = slice;
@@ -363,16 +360,16 @@ public class Mesh {
         textureCoords[t + 10] = f.height;
         textureCoords[t + 11] = slice;
     }
-    private void visit(byte[][][] visited,FaceType axis, int x, int y, int z) {
+    static void visit(byte[][][] visited,FaceType axis, int x, int y, int z) {
         visited[x][y][z] = (byte) (visited[x][y][z] | (1 << axis.ordinal()));
     }
-    private boolean hasNotBeenVisited(byte[][][] visited, FaceType axis, int x, int y, int z) {
+    static boolean hasNotBeenVisited(byte[][][] visited, FaceType axis, int x, int y, int z) {
         return (visited[x][y][z] & (1 << axis.ordinal())) == 0;
     }
-    private boolean tryVisit(Chunk c, byte[][][] visited, FaceType axis, int x, int y, int z, BlockState.BlockEnum blockType) {
+    static boolean tryVisit(Chunk c, byte[][][] visited, FaceType axis, int x, int y, int z, BlockState.BlockEnum blockType) {
         return c.getBlock(x, y, z).blockType == blockType && hasNotBeenVisited(visited, axis, x, y, z);
     }
-    private boolean tryStart(Chunk c, byte[][][] visited, FaceType axis, int x, int y, int z) {
+    static boolean tryStart(Chunk c, byte[][][] visited, FaceType axis, int x, int y, int z) {
         return !c.isAir(x,y,z) && hasNotBeenVisited(visited, axis, x, y, z);
     }
 }
