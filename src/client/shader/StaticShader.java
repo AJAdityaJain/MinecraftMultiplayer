@@ -1,8 +1,8 @@
-package engine.shader;
+package client.shader;
 
 import org.lwjgl.util.vector.Matrix4f;
 
-import engine.util.Maths;
+import client.util.Maths;
 
 import entities.Camera;
 

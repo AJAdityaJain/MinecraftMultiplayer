@@ -1,7 +1,7 @@
-package engine.util;
+package client.util;
 
-import engine.models.Loader;
-import engine.models.VAO;
+import client.models.Loader;
+import client.models.VAO;
 import org.lwjgl.util.vector.Vector3f;
 import server.block.BlockState;
 import server.block.Chunk;

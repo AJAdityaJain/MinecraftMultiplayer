@@ -1,14 +1,14 @@
-package engine.rendering;
+package client.rendering;
 
 
-import engine.models.VAO;
+import client.models.VAO;
 import entities.DynamicEntity;
 import entities.StaticEntity;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Matrix4f;
 
-import engine.shader.StaticShader;
-import engine.util.Maths;
+import client.shader.StaticShader;
+import client.util.Maths;
 
 import org.lwjgl.util.vector.Vector3f;
 

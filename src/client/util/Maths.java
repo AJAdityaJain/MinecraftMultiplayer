@@ -1,4 +1,4 @@
-package engine.util;
+package client.util;
 
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;

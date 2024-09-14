@@ -1,4 +1,4 @@
-package engine.models;
+package client.models;
 
 import org.lwjgl.opengl.*;
 

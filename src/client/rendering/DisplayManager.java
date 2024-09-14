@@ -1,4 +1,4 @@
-package engine.rendering;
+package client.rendering;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.*;

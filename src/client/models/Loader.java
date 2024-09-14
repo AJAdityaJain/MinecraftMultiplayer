@@ -1,4 +1,4 @@
-package engine.models;
+package client.models;
 
 import java.io.FileInputStream;
 import java.io.IOException;

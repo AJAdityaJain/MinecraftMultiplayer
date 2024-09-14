@@ -1,11 +1,11 @@
 package entities;
 
-import engine.rendering.DisplayManager;
+import client.rendering.DisplayManager;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector3f;
 
-import static engine.util.Maths.TAU;
+import static client.util.Maths.TAU;
 
 public class Camera {
 	

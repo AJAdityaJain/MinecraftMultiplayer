@@ -1,13 +1,13 @@
-import engine.util.Mesh;
+import client.util.Mesh;
 import entities.StaticEntity;
 import org.lwjgl.opengl.Display;
  import org.lwjgl.opengl.GL11;
  import org.lwjgl.util.vector.Vector3f;
 
-import engine.rendering.DisplayManager;
-import engine.models.Loader;
-import engine.rendering.Renderer;
-import engine.shader.StaticShader;
+import client.rendering.DisplayManager;
+import client.models.Loader;
+import client.rendering.Renderer;
+import client.shader.StaticShader;
 import entities.Camera;
 import server.block.Map;
 
