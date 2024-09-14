@@ -13,4 +13,8 @@ public class BlockState {
     }
 
     public BlockEnum blockType;
+
+    public BlockState(BlockEnum id) {
+        this.blockType = id;
+    }
 }

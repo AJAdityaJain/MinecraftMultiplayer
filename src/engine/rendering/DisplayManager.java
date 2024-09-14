@@ -27,7 +27,10 @@ public class DisplayManager {
 		GL11.glViewport(0,0, org.lwjgl.opengl.Display.getWidth(), org.lwjgl.opengl.Display.getHeight());
 		GL11.glClearColor(.2f,.1f, .2f, 1);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		GL11.glEnable(GL11.GL_CULL_FACE);
+
+//		GL11.glEnable(GL11.GL_CULL_FACE);
+		GL11.glPolygonMode( GL11.GL_FRONT_AND_BACK, GL11.GL_LINE );
+
 		GL11.glCullFace(GL11.GL_BACK);
 		GL11.glFrontFace(GL11.GL_CCW);
 	}

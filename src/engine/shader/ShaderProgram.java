@@ -39,6 +39,7 @@ public abstract class ShaderProgram {
 	
 	public void start(){
 		GL20.glUseProgram(programID);
+		GL20.glUniform1i(GL20.glGetUniformLocation(programID, "tex"), 1);
 	}
 	
 	public void  stop(){
@@ -59,11 +60,15 @@ public abstract class ShaderProgram {
 	protected void bindAttribute(int attribute, String variableName){
 		GL20.glBindAttribLocation(programID, attribute, variableName);
 	}
-	
+
 	protected void loadFloat(int location, float value){
 		GL20.glUniform1f(location, value);
 	}
-	
+
+	protected void loadInt(int location, int value){
+		GL20.glUniform1f(location, value);
+	}
+
 	protected void loadVector(int location, Vector3f vector){
 		GL20.glUniform3f(location,vector.x,vector.y,vector.z);
 	}

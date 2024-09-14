@@ -7,10 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.*;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
@@ -20,6 +17,11 @@ public class Loader {
 	
 	private static final List<VAO> vaos = new ArrayList<>();
 	private static final List<Integer> textures = new ArrayList<>();
+
+	public static void loadAtlas(){
+		GL13.glActiveTexture(GL13.GL_TEXTURE0);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, loadTexture("atlas"));
+	}
 
 	public static int loadTexture(String fileName) {
 		Texture texture = null;
@@ -34,6 +36,7 @@ public class Loader {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 
 		return texture.getTextureID();
 	}

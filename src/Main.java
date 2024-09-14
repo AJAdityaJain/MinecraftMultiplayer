@@ -1,6 +1,7 @@
  import engine.models.TexturedModel;
 
-import org.lwjgl.opengl.Display;
+ import engine.util.Mesh;
+ import org.lwjgl.opengl.Display;
  import org.lwjgl.opengl.GL11;
  import org.lwjgl.util.vector.Vector3f;
 
@@ -10,106 +11,23 @@ import engine.rendering.Renderer;
 import engine.shader.StaticShader;
 import entities.Camera;
 import entities.Entity;
+ import server.block.Chunk;
 
-public class Main {
+ public class Main {
 	public static void main(String[] args) {
 
 		DisplayManager.createDisplay();
 		StaticShader shader = new StaticShader();
 		Renderer renderer = new Renderer(shader);
 
-		float[] vertices = {			
-				0,1,0,
-				0,0,0,
-				1,0,0,
-				1,1,0,
-
-				0,1,1,
-				0,0,1,
-				1,0,1,
-				1,1,1,
-
-				1,1,0,
-				1,0,0,
-				1,0,1,
-				1,1,1,
-
-				0,1,0,
-				0,0,0,
-				0,0,1,
-				0,1,1,
-
-				0,1,1,
-				0,1,0,
-				1,1,0,
-				1,1,1,
-
-				0,0,1,
-				0,0,0,
-				1,0,0,
-				1,0,1
-
-		};
-		
-		float t = 0.5f;
-		float[] textureCoords = {
-				t,t,
-				t,1,
-				1,1,
-				1,t,
-				t,t,
-				t,1,
-				1,1,
-				1,t,
-				t,t,
-				t,1,
-				1,1,
-				1,t,
-				t,t,
-				t,1,
-				1,1,
-				1,t,
-				t,t,
-				t,1,
-				1,1,
-				1,t,
-				t,t,
-				t,1,
-				1,1,
-				1,t
-		};
-
-		int[] indices = {
-				//Back
-				1,0,3,
-				1,3,2,
-
-				//FRONT
-				4,5,7,
-				7,5,6,
-
-				//EAST
-				9,8,11,
-				9,11,10,
-
-				//WEST
-				12,13,15,
-				15,13,14,
-
-				//NORTH
-				17,16,19,
-				17,19,18,
-
-				//SOUTH
-				20,21,23,
-				23,21,22
-
-		};
-
+		Loader.loadAtlas();
+		Chunk chunk = new Chunk(0,0,0);
+		Mesh mesh = new Mesh();
 
 		TexturedModel staticModel = new TexturedModel(
-				Loader.createVAO(vertices,textureCoords,indices),
-				Loader.loadTexture("grass")
+				mesh.genGreedyMeshFromChunk(chunk),
+//				Loader.createVAO(vertices,textureCoords,indices),
+				Loader.loadTexture("stone")
 		);
 
 		Entity entity = new Entity(staticModel, new Vector3f(0,0,-5),0,0,0,1);
