@@ -1,5 +1,8 @@
 package server.block;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+
 public class BlockState {
     public enum BlockEnum{
         NONE,
@@ -29,5 +32,13 @@ public class BlockState {
                 System.exit(-1);
                 return -1;
         }
+    }
+
+    public int serialize() {
+        return blockType.ordinal();
+    }
+
+    public static BlockState deserialize(DataInputStream dis) throws IOException {
+        return new BlockState(BlockEnum.values()[dis.readInt()]);
     }
 }

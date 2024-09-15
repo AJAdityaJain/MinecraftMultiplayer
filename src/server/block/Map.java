@@ -6,11 +6,19 @@ public class Map {
     public final ArrayList<Chunk> loadedChunks = new ArrayList<>();
     private Chunk cached;
 
-    public Map() {
+    public Map() {}
+
+    public void addChunk(Chunk chunk){
+        loadedChunks.add(chunk);
+        cached = chunk;
+    }
+
+    public void loadChunks() {
         // Load the first chunk
-        for (int i = 0; i < 32; i++) {
-            for (int j = 0; j < 32; j++) {
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
                 loadedChunks.add(new Chunk(i, 0, j));
+                loadedChunks.getLast().generate();
             }
         }
         cached = loadedChunks.getFirst();
