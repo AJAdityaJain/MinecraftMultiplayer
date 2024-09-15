@@ -6,7 +6,7 @@ import org.lwjgl.util.vector.Vector3f;
 public abstract class Entity {
 
 	public final VAO model;
-	private Vector3f position;
+	protected Vector3f position;
 
     protected Entity(VAO model, Vector3f position) {
         this.model = model;
@@ -14,10 +14,10 @@ public abstract class Entity {
     }
 
 
-    public void increasePosition(float dx, float dy, float dz) {
-		this.position.x += dx;
-		this.position.y += dy;
-		this.position.z += dz;
+    public void increasePosition(Vector3f dPos) {
+		position.x += dPos.x;
+		position.y += dPos.y;
+		position.z += dPos.z;
 	}
 
 

@@ -47,8 +47,6 @@ public class Map {
                 return c.getBlock(x, y, z);
             }
         }
-
-        System.out.print("|");
         return new BlockState(BlockState.BlockEnum.NONE);
     }
 

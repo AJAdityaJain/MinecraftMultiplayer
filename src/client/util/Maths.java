@@ -18,9 +18,9 @@ public class Maths {
 
 
 	public static Matrix4f createTransformationMatrix(Vector3f translation, float rx, float ry,
-													  float rz, float scale) {
+													  float rz, Vector3f scale) {
 		matrix.setIdentity();
-		return matrix.translate(translation).rotate(rx, X_AXIS).rotate(ry, Y_AXIS).rotate(rz, Z_AXIS).scale(new Vector3f(scale,scale,scale));
+		return matrix.translate(translation).rotate(rx, X_AXIS).rotate(ry, Y_AXIS).rotate(rz, Z_AXIS).scale(scale);
 	}
 
 	public static Matrix4f createSimpleTransformationMatrix(Vector3f translation) {
@@ -30,7 +30,7 @@ public class Maths {
 
 	public static Matrix4f createViewMatrix(Camera camera) {
 		matrix.setIdentity();
-		return matrix.rotate(camera.getPitch(),X_AXIS).rotate(camera.getYaw(),Y_AXIS).translate(camera.getPosition().negate(null));
+		return matrix.rotate(camera.getRotX(),X_AXIS).rotate(camera.getRotY(),Y_AXIS).translate(camera.getPosition().negate(null));
 	}
 
 }
