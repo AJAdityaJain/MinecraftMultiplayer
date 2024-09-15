@@ -1,6 +1,12 @@
-package server.block;
+package server;
 
+import server.block.BlockState;
+import server.block.Chunk;
+
+import java.io.IOException;
 import java.util.ArrayList;
+
+import static network.NetworkConstants.S2C_CHUNK_SEND;
 
 public class Map {
     public final ArrayList<Chunk> loadedChunks = new ArrayList<>();
@@ -13,7 +19,7 @@ public class Map {
         cached = chunk;
     }
 
-    public void loadChunks() {
+    void loadChunks() {
         // Load the first chunk
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
@@ -50,4 +56,15 @@ public class Map {
         return getBlock(x, y, z).blockType == BlockState.BlockEnum.AIR;
     }
 
+    public byte[] serializeChunk(int x, int y, int z) throws IOException {
+        if(cached.chunkX == x && cached.chunkY == y && cached.chunkZ == z){
+            return cached.serialize(S2C_CHUNK_SEND);
+        }
+        for(Chunk c : loadedChunks){
+            if(c.chunkX == x && c.chunkY == y && c.chunkZ == z){
+                return c.serialize(S2C_CHUNK_SEND);
+            }
+        }
+        return null;
+    }
 }

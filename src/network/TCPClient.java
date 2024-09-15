@@ -2,7 +2,9 @@ package network;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 
+import static network.NetworkConstants.C2S_CHUNK_REQUEST;
 import static network.NetworkConstants.PACKET_SIZE;
 
 public class TCPClient {
@@ -42,19 +44,26 @@ public class TCPClient {
 
 			while (running && (bytesRead = input.read(buffer)) != -1) {
 				if(waitForPackets == (byte)0){
-					waitForPackets = (byte)(buffer[1]-1);
-					System.out.println("Waiting for " + waitForPackets + "more packets");
+					System.out.println(Arrays.toString(buffer).substring(0,128));
+					System.out.println("Waiting for " + buffer[1] + " packets");
+
+					waitForPackets = (byte) (buffer[1]-1);
+					if(waitForPackets == -1){
+						waitForPackets = 0;
+						continue;
+					}
 					messageBuffer.write(buffer);
+
 				}
 				else{
-					waitForPackets--;
+ 					waitForPackets--;
 					messageBuffer.write(buffer);
 					if(waitForPackets == (byte)0){
-						System.out.println("Received all packets length" + messageBuffer.size());
+						System.out.println("Received all packets. Bytes: " + messageBuffer.size());
 						byte[] completeMessage = messageBuffer.toByteArray();
 						listener.onMessageReceived(completeMessage);
 						messageBuffer.reset();
-					}
+                    }
 				}
 			}
 
@@ -66,6 +75,28 @@ public class TCPClient {
 	public void sendMessage(byte[] message) {
 		try{
 			output.write(message);
+			output.flush();
+		}
+		catch (IOException e){
+			System.out.println("Error sending message: " + e.getMessage());
+		}
+	}
+
+	public void requestChunk(int x, int y, int z){
+		try{
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(bos);
+
+			dos.writeByte(C2S_CHUNK_REQUEST);
+			dos.writeInt(x);
+			dos.writeInt(y);
+			dos.writeInt(z);
+			dos.flush();
+
+
+
+			System.out.println("\n\nRequesting chunk: " + x + " " + y + " " + z);
+			output.write(bos.toByteArray());
 			output.flush();
 		}
 		catch (IOException e){

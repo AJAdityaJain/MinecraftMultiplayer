@@ -1,7 +1,6 @@
 package server;
 
 import network.TCPServer;
-import server.block.Map;
 
 public class Server {
 	public static Map world = new Map();

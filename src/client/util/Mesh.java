@@ -5,7 +5,7 @@ import client.models.VAO;
 import org.lwjgl.util.vector.Vector3f;
 import server.block.BlockState;
 import server.block.Chunk;
-import server.block.Map;
+import server.Map;
 
 import java.util.ArrayList;
 import java.util.HashMap;

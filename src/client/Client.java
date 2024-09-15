@@ -12,7 +12,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 import server.block.Chunk;
-import server.block.Map;
+import server.Map;
 
 import static network.NetworkConstants.S2C_CHUNK_SEND;
 
@@ -24,22 +24,23 @@ public class Client {
 		TCPClient tcp_client = new TCPClient("localhost", 8080, new TCPClient.MessageListener() {
 			@Override
 			public void onMessageReceived(byte[] message) {
-				System.out.println("Received message");
 				byte id = message[0];
 				switch(id){
 					case S2C_CHUNK_SEND:
-						System.out.println(message.length);
+						System.out.println("Received chunk");
 						world.addChunk(Chunk.deserialize(message));
-						System.out.println("Chunk received");
 						break;
 				}
 			}
 		});
 
 		System.out.println("Client started");
-		tcp_client.sendMessage("Hello Server".getBytes());
-
-		Thread.sleep(10000);
+		for (int x = 0; x < 16; x++) {
+			for (int z = 0; z < 16; z++) {
+				Thread.sleep(10);
+				tcp_client.requestChunk(x, 0, z);
+			}
+		}
 		graphics();
 
 		tcp_client.stop();
@@ -49,7 +50,6 @@ public class Client {
 		DisplayManager.createDisplay();
 		StaticShader shader = new StaticShader();
 		Renderer renderer = new Renderer(shader);
-
 		Loader.loadTexture();
 //		Loader.loadAtlas();
 

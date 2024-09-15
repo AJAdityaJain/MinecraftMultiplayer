@@ -2,11 +2,10 @@ package network;
 
 import server.Server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -32,24 +31,10 @@ class ClientHandler implements Runnable {
 
             // Reading input from client (optional based on your protocol)
             while ((bytesRead = input.read(buffer)) != -1) {
-                System.out.println("Received from client: " + new String(buffer, 0, bytesRead));
-
-                // Serialize and send the chunk in multiple packets
-                byte[] out_buffer = Server.world.loadedChunks.getFirst().serialize(S2C_CHUNK_SEND);
-                System.out.println("Total length of out_buffer: " + out_buffer.length);
-
-                int totalBytesSent = 0;
-
-                // Loop to send data in chunks
-                while (totalBytesSent < out_buffer.length) {
-                    int bytesToSend = Math.min(PACKET_SIZE, out_buffer.length - totalBytesSent);
-                    output.write(out_buffer, totalBytesSent, bytesToSend);
-                    output.flush();
-                    totalBytesSent += bytesToSend;
-                }
-
-                System.out.println("Sent chunk to client");
-
+                System.out.println("Received from client: " + Arrays.toString(buffer).substring(0,128));
+                ByteArrayInputStream bis = new ByteArrayInputStream(buffer);
+                DataInputStream dis = new DataInputStream(bis);
+                deserializeMessages(dis,output);
             }
 
             System.out.println("Client disconnected: " + clientSocket.getInetAddress());
@@ -63,6 +48,36 @@ class ClientHandler implements Runnable {
                 System.out.println("Error closing client socket: " + e.getMessage());
             }
         }
+    }
+
+    private void deserializeMessages(DataInputStream dis, OutputStream output) throws IOException {
+        switch (dis.readByte()) {
+            case C2S_CHUNK_REQUEST:
+
+                int x = dis.readInt();
+                int y = dis.readInt();
+                int z = dis.readInt();
+
+                System.out.println("Received chunk request: " + x + " " + y + " " + z);
+                byte[] out_buffer = Server.world.serializeChunk(x,y,z);
+
+                int totalBytesSent = 0;
+                while (totalBytesSent < out_buffer.length) {
+                    int bytesToSend = Math.min(PACKET_SIZE, out_buffer.length - totalBytesSent);
+                    output.write(out_buffer, totalBytesSent, bytesToSend);
+                    output.flush();
+                    totalBytesSent += bytesToSend;
+                }
+
+                break;
+            default:
+                System.out.print("?");
+                break;
+        }
+        if(dis.available() > 0){
+            deserializeMessages(dis,output);
+        }
+
     }
 }
 
