@@ -23,7 +23,7 @@ public class Camera extends DynamicEntity{
 	}
 
 	public Camera(){
-        super(null, new Vector3f(12,12f,8), new Vector3f(1,2f,1), 0, 160 * 3.14f/180, 0, 0,.02f);
+        super(null, new Vector3f(12,14f,8), new Vector3f(1,2f,1), 0, 160 * 3.14f/180, 0, 0,.02f);
     }
 
 	public void move(float delta_time){

@@ -1,6 +1,7 @@
 package server.block;
 
-import network.NetworkConstants;
+
+import server.util.FastNoiseLite;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import static network.NetworkConstants.PACKET_SIZE;
 
 public class Chunk {
     public static final int CHUNK_SIZE = 16;
+    private static final FastNoiseLite noise = new FastNoiseLite();
 
 
     private final byte[][][] blocks = new byte[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
@@ -24,25 +26,32 @@ public class Chunk {
         chunkZ = z;
     }
 
+    private int genBlock(int x, int y, int z) {
+        double Continentals = Math.pow(1.3,4 + noise.GetNoise (x + CHUNK_SIZE*chunkX,z + CHUNK_SIZE*chunkZ)*4);
+        int surface = Math.clamp((int) Continentals, 0, 16);
+        if( y == surface) {
+            return 3;
+        }
+        else if(surface-y <3 && surface-y > 0) {
+            return 2;
+        }
+        else if(y < surface) {
+            return 1;
+        }
+        return 0;
+    }
     public void generate(){
+        noise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
+
         dictionary.add(new BlockState(BlockState.BlockEnum.AIR));
         dictionary.add(new BlockState(BlockState.BlockEnum.STONE));
         dictionary.add(new BlockState(BlockState.BlockEnum.DIRT));
+        dictionary.add(new BlockState(BlockState.BlockEnum.GRASS));
         new Random();
         for(int i = 0; i < CHUNK_SIZE; i++) {
             for(int j = 0; j < CHUNK_SIZE; j++) {
                 for(int k = 0; k < CHUNK_SIZE; k++) {
-                    if(j < 8){
-                        blocks[i][j][k] = 1;
-                    } else if(j < 9) {
-                        blocks[i][j][k] = 2;
-//                    }  else if(j < 10 &&  rand.nextInt(2) == 0) {
-                    }  else if(j < 10 && (i > 6 && i < 10 && k > 6 && k < 10)) {
-                        blocks[i][j][k] = 2;
-                    }
-                    else {
-                        blocks[i][j][k] = 0;
-                    }
+                    blocks[i][j][k] = (byte) genBlock(i, j, k);
                 }
             }
         }

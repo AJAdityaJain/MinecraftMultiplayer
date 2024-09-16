@@ -126,12 +126,12 @@ public class Client {
 		for (float dx = hit.x/-2; dx <= hit.x/2; dx ++){
 			for (float dz = hit.z/-2; dz <= hit.z/2; dz ++) {
 				if (pass) {
-					if (!world.isAir((int) (pos.x + dx), (int) (pos.y + vel.y - hit.y + y_off), (int) (pos.z + dz))) {
-						if(!camera.onGround) camera.onGround = true;
+					if (!world.isAir((int) (pos.x + dx), (int) (pos.y + vel.y - hit.y + y_off-0.001f), (int) (pos.z + dz))) {
+						camera.onGround = true;
 						pass = false;
 						camera.stopVelocityY();
 						break;
-					}
+					}else camera.onGround = false;
 					if (!world.isAir((int) (pos.x + dx), (int) (pos.y + vel.y + y_off), (int) (pos.z + dz))) {
 						pass = false;
 						camera.stopVelocityY();

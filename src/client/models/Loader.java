@@ -16,6 +16,8 @@ import org.newdawn.slick.opengl.TextureLoader;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.glTexSubImage3D;
+import static org.lwjgl.opengl.GL30.glGenerateMipmap;
+import static org.lwjgl.opengl.GL30.glTexParameterI;
 import static org.lwjgl.opengl.GL42.glTexStorage3D;
 import static org.lwjgl.opengl.GL43.GL_TEXTURE_2D_ARRAY;
 
@@ -53,7 +55,7 @@ public class Loader {
 		//bind the texture
 		glBindTexture(GL_TEXTURE_2D_ARRAY, id);
 
-		int numSlices = 2;
+		int numSlices = 3;
 
 		String[] filename = {"dirt", "stone", "grass"};
 		glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 16, 16, numSlices);
@@ -71,10 +73,12 @@ public class Loader {
 			System.exit(-1);
 		}
 		//set the texture parameters, can be GL_LINEAR or GL_NEAREST
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST );
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 
+		glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 		//upload texture
 //		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, decoder.getWidth(), decoder.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 

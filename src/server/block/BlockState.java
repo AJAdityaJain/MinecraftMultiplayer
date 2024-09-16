@@ -27,6 +27,8 @@ public class BlockState {
                 return 0;
             case STONE:
                 return 1;
+            case GRASS:
+                return 2;
             default:
                 System.out.println("Block not found");
                 System.exit(-1);
