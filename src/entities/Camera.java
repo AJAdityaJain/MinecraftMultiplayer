@@ -9,24 +9,54 @@ import static client.util.Maths.TAU;
 
 public class Camera extends DynamicEntity{
 
-	private static final float ANG_SPEED = 1f;
 	private boolean inGame = true;
 	private final Vector3f camVelocity = new Vector3f();
+	private final float jumpSpeed = 5f;
+	private final float uK = 1-0.1f;//Coefficient Of Kinetic Friction
 
 	@Override
 	public Vector3f getVelocity() {
 		Vector3f vel = super.getVelocity();
-		camVelocity.y += vel.y;
-		camVelocity.x += vel.x;
-		camVelocity.z += vel.z;
-		return camVelocity;
+		vel.y += camVelocity.y;
+		vel.x += camVelocity.x;
+		vel.z += camVelocity.z;
+		return vel;
+	}
+
+	@Override
+	public void  stopVelocityX() {
+		super.stopVelocityX();
+		camVelocity.x = 0;
+	}
+
+	@Override
+	public void  stopVelocityY() {
+		super.stopVelocityY();
+		camVelocity.y = 0;
+	}
+
+	@Override
+	public void stopVelocityZ() {
+		super.stopVelocityZ();
+		camVelocity.z = 0;
+	}
+
+	@Override
+	public void tick(float delta_time){
+		velocity.x += delta_time * acceleration.x;
+		velocity.y += delta_time * acceleration.y;
+		if (!onGround) velocity.y -= delta_time *g;
+		velocity.z += delta_time * acceleration.z;
+		position.x += delta_time * (velocity.x + camVelocity.x);
+		position.y += delta_time * (velocity.y + + camVelocity.y);
+		position.z += delta_time * (velocity.z + camVelocity.z);
 	}
 
 	public Camera(){
-        super(null, new Vector3f(12,14f,8), new Vector3f(1,2f,1), 0, 160 * 3.14f/180, 0, 0,.02f);
+        super(null, new Vector3f(12,14f,8), new Vector3f(.6f,1.8f,.6f), 0, 160 * 3.14f/180, 0, 4.5f);
     }
 
-	public void move(float delta_time){
+	public void input(float delta_time){
 		camVelocity.x=0f;
 		camVelocity.y=0f;
 		camVelocity.z=0f;
@@ -47,9 +77,14 @@ public class Camera extends DynamicEntity{
 			camVelocity.x+= speed * (float) Math.cos(rotY);
 			camVelocity.z+= speed * (float) Math.sin(rotY);
 		}
+		if(onGround) {
+			camVelocity.x *= uK;
+			camVelocity.z *= uK;
+		}
+
 		if(onGround && Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
 			onGround = false;
-			velocity.y+= speed*1.6f;
+			velocity.y+= jumpSpeed;
 		}
 
 
@@ -60,8 +95,8 @@ public class Camera extends DynamicEntity{
 			int x = Mouse.getX()- DisplayManager.WIDTH_HALF;
 			int y = Mouse.getY()- DisplayManager.HEIGHT_HALF;
 
-			rotY+=x*ANG_SPEED*delta_time;
-			rotX-=y*ANG_SPEED*delta_time;
+			rotY+=x*delta_time;
+			rotX-=y*delta_time;
 			rotX = Math.clamp(rotX, -1.5f, 1.5f);
 			rotY %= TAU;
 

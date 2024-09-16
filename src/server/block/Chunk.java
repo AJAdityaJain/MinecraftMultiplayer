@@ -5,6 +5,7 @@ import server.util.FastNoiseLite;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 import static network.NetworkConstants.PACKET_SIZE;
@@ -69,9 +70,9 @@ public class Chunk {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
 
-        // Write message type
-        dos.writeByte(type);
         dos.writeByte(0);
+        dos.writeByte(0);
+        dos.writeByte(type);
 
         // Write chunk coordinates
         dos.writeInt(chunkX);
@@ -94,7 +95,10 @@ public class Chunk {
 
         dos.flush();
         byte[] data = bos.toByteArray();
-        data[1] = (byte) Math.ceil(((float)data.length)/PACKET_SIZE);
+        data[1] = (byte) ((data.length-2) & 0xFF);//first byte of the length
+        data[0] = (byte) (((data.length-2) >> 8) & 0xFF);//second byte of the length
+        System.out.println("Serialized chunk of length: " + data.length);
+        System.out.println(Arrays.toString(data).substring(0,128));
         return data;
     }
 
@@ -104,8 +108,10 @@ public class Chunk {
             ByteArrayInputStream bis = new ByteArrayInputStream(data);
             DataInputStream dis = new DataInputStream(bis);
 
-            dis.readByte(); // Skip message type
-            dis.readByte(); // Skip padding
+//            dis.readByte(); // Skip message length
+//            dis.readByte(); // Skip message length
+            dis.readByte(); // Skip chunk message type
+
 
             // Read chunk coordinates
             int chunkX = dis.readInt();
@@ -129,6 +135,7 @@ public class Chunk {
                 chunk.dictionary.add(state);
             }
 
+            System.out.println("Deserialized chunk");
             return chunk;
         }
         catch (Exception e) {

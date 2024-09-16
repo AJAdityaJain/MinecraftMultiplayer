@@ -8,6 +8,7 @@ import entities.Camera;
 @SuppressWarnings("SameReturnValue")
 public class Maths {
 	public static final float TAU = (float) (Math.PI*2);
+	public static final Matrix4f identity = new Matrix4f();
 
 	private static final Matrix4f matrix = new Matrix4f();
 	private static final Vector3f X_AXIS = new Vector3f(1,0,0);

@@ -5,32 +5,31 @@ import org.lwjgl.util.vector.Vector3f;
 
 public class DynamicEntity extends Entity {
     protected float rotX, rotY, rotZ;
-    protected Vector3f hitBox;
-    protected Vector3f scale;
+    protected final Vector3f hitBox;
     protected Vector3f velocity = new Vector3f(0, 0, 0);
     protected Vector3f acceleration = new Vector3f(0, 0, 0);
-    protected static float g = 0.1f;
+    protected static float g = 32.656f;//Minecraft accurate units
     public boolean onGround = false;
     protected final float speed;
 
     public void tick(float delta_time){
         velocity.x += delta_time * acceleration.x;
         velocity.y += delta_time * acceleration.y;
-if (!onGround) velocity.y -= delta_time *g;
+if (!onGround)
+ velocity.y -= delta_time *g;
         velocity.z += delta_time * acceleration.z;
         position.x += delta_time * velocity.x;
         position.y += delta_time * velocity.y;
         position.z += delta_time * velocity.z;
     }
     public DynamicEntity(VAO model, Vector3f position,Vector3f hitBox, float rotX, float rotY, float rotZ,
-                  float scale, float speed) {
+                  float speed) {
         super(model, position);
         this.speed = speed;
         this.hitBox = hitBox;
         this.rotX = rotX;
         this.rotY = rotY;
         this.rotZ = rotZ;
-        this.scale = new Vector3f(scale, scale, scale);
     }
 
     public Vector3f getHitBox() {
@@ -38,7 +37,7 @@ if (!onGround) velocity.y -= delta_time *g;
     }
 
     public Vector3f getVelocity() {
-        return velocity;
+        return new Vector3f(velocity);
     }
 
     public void stopVelocityX() {
@@ -80,14 +79,6 @@ if (!onGround) velocity.y -= delta_time *g;
 
     public void setRotZ(float rotZ) {
         this.rotZ = rotZ;
-    }
-
-    public Vector3f getScale() {
-        return scale;
-    }
-
-    public void setScale(Vector3f scale) {
-        this.scale = scale;
     }
 
 }

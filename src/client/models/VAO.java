@@ -34,7 +34,7 @@ public class VAO{
         GL20.glDisableVertexAttribArray(1);
     }
 
-    public void clean() {
+    void clean() {
         GL30.glDeleteVertexArrays(vaoID);
         GL15.glDeleteBuffers(eboID);
         GL15.glDeleteBuffers(vboPosID);

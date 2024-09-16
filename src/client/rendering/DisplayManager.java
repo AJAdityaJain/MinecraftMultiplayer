@@ -3,12 +3,17 @@ package client.rendering;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.*;
 
+import java.util.Random;
+
 public class DisplayManager {
-	private static final int FPS_CAP = 360;
+	public static final int FPS_CAP = 600 ;
 	public static final int WIDTH = 1920;
 	public static final int HEIGHT = 1080;
 	public static final int WIDTH_HALF = WIDTH/2;
 	public static final int HEIGHT_HALF = HEIGHT/2;
+	public static final float FOV = 90;
+	public static final float NEAR_PLANE = 0.1f;
+	public static final float FAR_PLANE = 1000;
 
 	public static void createDisplay(){		
 		ContextAttribs attrib = new ContextAttribs(3,3)

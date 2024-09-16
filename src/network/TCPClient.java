@@ -37,34 +37,11 @@ public class TCPClient {
 	private void listenForServerMessages() {
 
 		try {
-			byte[] buffer = new byte[PACKET_SIZE];  // Adjust buffer size if necessary
-			ByteArrayOutputStream messageBuffer = new ByteArrayOutputStream(); // Accumulate received bytes
-			byte waitForPackets = 0;
-			int bytesRead;
-
-			while (running && (bytesRead = input.read(buffer)) != -1) {
-				if(waitForPackets == (byte)0){
-					System.out.println(Arrays.toString(buffer).substring(0,128));
-					System.out.println("Waiting for " + buffer[1] + " packets");
-
-					waitForPackets = (byte) (buffer[1]-1);
-					if(waitForPackets == -1){
-						waitForPackets = 0;
-						continue;
-					}
-					messageBuffer.write(buffer);
-
-				}
-				else{
- 					waitForPackets--;
-					messageBuffer.write(buffer);
-					if(waitForPackets == (byte)0){
-						System.out.println("Received all packets. Bytes: " + messageBuffer.size());
-						byte[] completeMessage = messageBuffer.toByteArray();
-						listener.onMessageReceived(completeMessage);
-						messageBuffer.reset();
-                    }
-				}
+			DataInputStream dis = new DataInputStream(input);
+			while (running && input.available()>=0) {
+				short len = (short) ((dis.readByte() << 8) | (dis.readByte() & 0xff));
+				byte[] buffer = dis.readNBytes(len);
+				listener.onMessageReceived(buffer);
 			}
 
 		} catch (IOException e) {
@@ -94,8 +71,6 @@ public class TCPClient {
 			dos.flush();
 
 
-
-			System.out.println("\n\nRequesting chunk: " + x + " " + y + " " + z);
 			output.write(bos.toByteArray());
 			output.flush();
 		}
