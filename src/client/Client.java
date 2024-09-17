@@ -6,30 +6,50 @@ import client.rendering.Renderer;
 import client.shader.StaticShader;
 import client.util.Mesh;
 import entities.Camera;
+import entities.DynamicEntity;
 import entities.StaticEntity;
-import network.TCPClient;
+import network.TCP_UDP_Client;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
 import server.block.Chunk;
 import server.Map;
 
+import java.nio.ByteBuffer;
+
 import static network.NetworkConstants.S2C_CHUNK_SEND;
+import static network.NetworkConstants.S2C_PLAYER_MOVE;
 
 
 public class Client {
 	private static final Map world = new Map();
 	private static Renderer renderer;
+	private static TCP_UDP_Client tcp_client;
+	private static DynamicEntity frend;
 
 	public static void main(String[] args) throws InterruptedException {
-		TCPClient tcp_client = new TCPClient("localhost", 8080, message -> {
-			byte id = message[0];
-			switch (id) {
-				case S2C_CHUNK_SEND:
-					System.out.println("Received chunk");
-					world.addChunk(Chunk.deserialize(message));
-					break;
-			}
-		});
+		tcp_client = new TCP_UDP_Client(
+				message -> {
+					byte id = message[0];
+					switch (id) {
+						case S2C_CHUNK_SEND:
+							System.out.println("Received chunk");
+							world.addChunk(Chunk.deserialize(message));
+							break;
+					}
+				},
+				message -> {
+					byte id = message[0];
+					System.out.println("Received UDP message: " + id);
+					switch (id) {
+						case S2C_PLAYER_MOVE:
+							float x = ByteBuffer.wrap(new byte[]{message[1], message[2], message[3], message[4]}).getFloat();
+							float y = ByteBuffer.wrap(new byte[]{message[5], message[6], message[7], message[8]}).getFloat();
+							float z = ByteBuffer.wrap(new byte[]{message[9], message[10], message[11], message[12]}).getFloat();
+							frend.setPosition(new Vector3f(x, y, z));
+							break;
+					}
+				}
+		);
 
 
 		System.out.println("Client started. Requesting Chunks");
@@ -43,6 +63,11 @@ public class Client {
 		Loader.loadTexture();
 		renderer = new Renderer(new StaticShader());
 
+		 frend = new DynamicEntity(
+				Mesh.genCubeMesh(),
+				new Vector3f(0, 16, 0),
+				new Vector3f(1, 1, 1),
+				0,0,0,0);
 		Thread.sleep(500);
 		mainLoop(new Camera());
 
@@ -68,7 +93,6 @@ public class Client {
 			cameraCollision(camera, v.y * delta_time, 1);
 			cameraCollision(camera, v.z * delta_time, 2);
 			cameraOnGround(camera);
-			Display.setTitle(String.valueOf(camera.onGround));
 			camera.tick(delta_time);
 
 			renderer.prepare(camera);
@@ -77,12 +101,16 @@ public class Client {
 			renderer.renderWorld(world_mesh);
 			world_mesh.model.unbind();
 
+			frend.model.bind();
+			renderer.render(frend);
+			frend.model.unbind();
+
 			DisplayManager.updateDisplay();
 
 			frame_idx_k += 1000;
 			if (frame_idx_k == samples) {
 				new_time = System.currentTimeMillis();
-
+				tcp_client.sendLocation(camera.getPosition());
 
 				delta_time = (float) (new_time - time) / samples;
 				Display.setTitle("FPS: " + Math.round(1 / delta_time));

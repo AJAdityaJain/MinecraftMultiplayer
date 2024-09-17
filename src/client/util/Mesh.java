@@ -422,4 +422,95 @@ public class Mesh {
     static boolean tryStart(Map c, FaceType axis, int x, int y, int z) {
         return !c.isAir(x,y,z) && hasNotBeenVisited(axis, x, y, z);
     }
+
+    public static VAO genCubeMesh() {
+        float[] vertices = {
+                0,1,0,
+                0,0,0,
+                1,0,0,
+                1,1,0,
+
+                0,1,1,
+                0,0,1,
+                1,0,1,
+                1,1,1,
+
+                1,1,0,
+                1,0,0,
+                1,0,1,
+                1,1,1,
+
+                0,1,0,
+                0,0,0,
+                0,0,1,
+                0,1,1,
+
+                0,1,1,
+                0,1,0,
+                1,1,0,
+                1,1,1,
+
+                0,0,1,
+                0,0,0,
+                1,0,0,
+                1,0,1
+
+        };
+
+        float t = 0.5f;
+        float[] textureCoords = {
+                t,t,0,
+                t,1,0,
+                1,1,0,
+                1,t,0,
+                t,t,0,
+                t,1,0,
+                1,1,0,
+                1,t,0,
+                t,t,0,
+                t,1,0,
+                1,1,0,
+                1,t,0,
+                t,t,0,
+                t,1,0,
+                1,1,0,
+                1,t,0,
+                t,t,0,
+                t,1,0,
+                1,1,0,
+                1,t,0,
+                t,t,0,
+                t,1,0,
+                1,1,0,
+                1,t,0
+        };
+
+        int[] indices = {
+                //Back
+                1,0,3,
+                1,3,2,
+
+                //FRONT
+                4,5,7,
+                7,5,6,
+
+                //EAST
+                9,8,11,
+                9,11,10,
+
+                //WEST
+                12,13,15,
+                15,13,14,
+
+                //NORTH
+                17,16,19,
+                17,19,18,
+
+                //SOUTH
+                20,21,23,
+                23,21,22
+
+        };
+        return Loader.createVAO(vertices,textureCoords,indices);
+    }
 }

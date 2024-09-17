@@ -44,7 +44,7 @@ public class Renderer {
 		shader.loadTransformationMatrix(Maths.identity);
 		world.model.render();
 	}
-	public void render(DynamicEntity entity, StaticShader shader){
+	public void render(DynamicEntity entity){
 		shader.loadTransformationMatrix(
 				Maths.createTransformationMatrix(
 						entity.getPosition(),entity.getRotX(), entity.getRotY(), entity.getRotZ(), UNIT

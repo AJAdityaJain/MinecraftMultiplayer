@@ -14,4 +14,7 @@ public class NetworkConstants {
     public static final byte S2C_PLAYER_MOVE    = (byte) 203;
 
     public static final int PACKET_SIZE = 1024;
+    public static final int TCP_PORT = 8080;
+    public static final int UDP_PORT = 8081;
+    public static boolean RUNNING = true;
 }

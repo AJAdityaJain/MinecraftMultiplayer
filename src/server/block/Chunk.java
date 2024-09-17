@@ -97,8 +97,6 @@ public class Chunk {
         byte[] data = bos.toByteArray();
         data[1] = (byte) ((data.length-2) & 0xFF);//first byte of the length
         data[0] = (byte) (((data.length-2) >> 8) & 0xFF);//second byte of the length
-        System.out.println("Serialized chunk of length: " + data.length);
-        System.out.println(Arrays.toString(data).substring(0,128));
         return data;
     }
 
