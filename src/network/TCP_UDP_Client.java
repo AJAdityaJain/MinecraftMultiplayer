@@ -1,5 +1,7 @@
 package network;
 
+import client.Client;
+import entities.Camera;
 import org.lwjgl.util.vector.Vector3f;
 
 import java.io.*;
@@ -24,13 +26,13 @@ public class TCP_UDP_Client {
 	private static final DataOutputStream dos = new DataOutputStream(bos);
 
 
-	private boolean running;
+	public boolean running;
 
 	public interface MessageListener {
 		void onMessageReceived(byte[] message);
 	}
 
-	public TCP_UDP_Client(MessageListener tcp, MessageListener udp) {
+	public TCP_UDP_Client(MessageListener tcp, MessageListener udp, Runnable loop) {
         try {
 			this.tcp_socket = new Socket("localhost", TCP_PORT);
 			this.udp_socket = new DatagramSocket(tcp_socket.getLocalPort());
@@ -43,6 +45,7 @@ public class TCP_UDP_Client {
 			// Start a thread to listen for server messages
 			new Thread(this::listenForTCPMessages).start();
 			new Thread(this::listenForUDPMessages).start();
+			new Thread(loop).start();
 		}
 		catch (IOException e) {
 			throw new RuntimeException("Error connecting to server: " + e.getMessage());
@@ -62,6 +65,7 @@ public class TCP_UDP_Client {
 
 		} catch (IOException e) {
 			System.out.println("Error reading from server: " + e.getMessage());
+			System.exit(-1);
 		}
 	}
 
@@ -72,21 +76,21 @@ public class TCP_UDP_Client {
 			while (running){
 				DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				udp_socket.receive(packet);
-				System.out.println(packet.getSocketAddress());
 				udp_listener.onMessageReceived(buf);
 			}
 		}
 		catch (IOException e){
 			System.out.println("Error receiving UDP packet: " + e.getMessage());
+			System.exit(-1);
 		}
 	}
 
-	public void sendTCPMessage(byte[] message) throws IOException {
+	private void sendTCPMessage(byte[] message) throws IOException {
 		tcp_output.write(message);
 		tcp_output.flush();
 	}
 
-	public void sendUDPPacket(byte[] buf) throws IOException {
+	private void sendUDPPacket(byte[] buf) throws IOException {
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getByName("localhost"), UDP_PORT);
 		udp_socket.send(packet);
 	}
@@ -109,9 +113,8 @@ public class TCP_UDP_Client {
 
 	public void sendLocation(Vector3f position) {
 		try {
-			System.out.println("doxx");
-
 			dos.writeByte(C2S_PLAYER_MOVE);
+			dos.writeByte(0);
 			dos.writeFloat(position.x);
 			dos.writeFloat(position.y);
 			dos.writeFloat(position.z);

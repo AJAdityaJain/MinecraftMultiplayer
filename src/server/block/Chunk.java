@@ -133,7 +133,6 @@ public class Chunk {
                 chunk.dictionary.add(state);
             }
 
-            System.out.println("Deserialized chunk");
             return chunk;
         }
         catch (Exception e) {

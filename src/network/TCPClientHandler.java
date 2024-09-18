@@ -4,23 +4,33 @@ import server.Server;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Arrays;
 
-import static network.NetworkConstants.C2S_CHUNK_REQUEST;
-import static network.NetworkConstants.PACKET_SIZE;
+import static network.NetworkConstants.*;
+import static server.Server.*;
 
 public class TCPClientHandler implements Runnable {
     private final Socket clientSocket;
+    private final byte id;
 
 
-    public TCPClientHandler(Socket clientSocket) {
+    public TCPClientHandler(Socket clientSocket, byte id) {
         this.clientSocket = clientSocket;
+        this.id = id;
+    }
+
+    public byte getId() {
+        return id;
     }
 
     @Override
     public void run() {
-        try (InputStream input = clientSocket.getInputStream();
-             OutputStream output = clientSocket.getOutputStream()) {
+        try {
+            System.out.println("Client connected #" + id);
+            udpBroadcast(new byte[]{S2C_PLAYER_JOIN, id}, id);
+            udpSendActiveClients(clientSocket.getRemoteSocketAddress());
+
+            InputStream input = clientSocket.getInputStream();
+            OutputStream output = clientSocket.getOutputStream();
 
             byte[] buffer = new byte[PACKET_SIZE];
             int bytesRead;
@@ -28,19 +38,16 @@ public class TCPClientHandler implements Runnable {
             System.out.println("Client handler started for: " + clientSocket.getInetAddress());
 
             // Reading input from client (optional based on your protocol)
+            ByteArrayInputStream bis = new ByteArrayInputStream(buffer);
+            DataInputStream dis = new DataInputStream(bis);
             while ((bytesRead = input.read(buffer)) != -1) {
-                ByteArrayInputStream bis = new ByteArrayInputStream(buffer);
-                DataInputStream dis = new DataInputStream(bis);
                 deserializeMessages(dis, output);
+                bis.reset();
             }
 
-        } catch (IOException e) {
-            System.out.println("Client connection error: " + e.getMessage());
-        }
-
-        try {
-            System.out.println("Client disconnected: " + clientSocket.getInetAddress());
-            TCPServer.clients.remove(clientSocket.getRemoteSocketAddress());
+            System.out.println("Client disconnected #" + id);
+            udpBroadcast(new byte[]{S2C_PLAYER_LEAVE, id}, id);
+            Server.clients.remove(clientSocket.getRemoteSocketAddress());
             clientSocket.close();
         } catch (IOException e) {
             System.out.println("Error closing client socket: " + e.getMessage());
@@ -56,7 +63,6 @@ public class TCPClientHandler implements Runnable {
                 int y = dis.readInt();
                 int z = dis.readInt();
 
-                System.out.println("Received chunk request: " + x + " " + y + " " + z);
                 byte[] out_buffer = Server.world.serializeChunk(x,y,z);
 
                 int totalBytesSent = 0;
@@ -69,7 +75,6 @@ public class TCPClientHandler implements Runnable {
 
                 break;
             default:
-                System.out.print("?");
                 break;
         }
         if(dis.available() > 0){

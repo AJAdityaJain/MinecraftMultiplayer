@@ -53,7 +53,7 @@ public class Renderer {
 		entity.model.render();
 	}
 
-	public void render(VAO model, Vector3f position, float rx, float ry, float rz, Vector3f scale, StaticShader shader) {
+	public void render(VAO model, Vector3f position, float rx, float ry, float rz, Vector3f scale) {
 		shader.loadTransformationMatrix(
 				Maths.createTransformationMatrix(
 						position,rx, ry, rz, scale
