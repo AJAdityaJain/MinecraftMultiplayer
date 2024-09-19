@@ -7,16 +7,16 @@ import client.rendering.Renderer;
 import client.shader.StaticShader;
 import client.util.Mesh;
 import entities.Camera;
-import entities.DynamicEntity;
 import entities.StaticEntity;
-import network.TCP_UDP_Client;
+import network.TCPClient;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
 import server.block.Chunk;
 import server.Map;
 
-import java.nio.ByteBuffer;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.Scanner;
 
 import static network.NetworkConstants.*;
 
@@ -25,72 +25,64 @@ public class Client {
 	private static final Map world = new Map();
 	private static Renderer renderer;
 	private static Camera player;
-	private static TCP_UDP_Client tcp_client;
+	private static TCPClient tcp_client;
 	private static final HashMap<Byte, Vector3f> players = new HashMap<>();
+
+	public static void addChunk(Chunk chunk) {
+		world.addChunk(chunk);
+	}
 
 	public static void main(String[] args) throws InterruptedException {
 		player = new Camera();
 
-		tcp_client = new TCP_UDP_Client(
-				message -> {
-					byte id = message[0];
-					switch (id) {
-						case S2C_CHUNK_SEND:
-							System.out.print("▦");
-							world.addChunk(Chunk.deserialize(message));
+		Scanner myObj = new Scanner(System.in);
+		String ip = myObj.nextLine();
+		int port = myObj.nextInt();
+		tcp_client = new TCPClient(
+				new InetSocketAddress(ip, port),
+				(code,stream) -> {
+					switch (code) {
+						case S2C_PLAYER_JOIN:{
+							byte id = stream.readByte();
+							System.out.println("Player #" + id +" joined. Now " + players.size() + " players");
+							players.put(id, new Vector3f(8, 14, 8));
 							break;
-					}
-				},
-				buf -> {
-					byte id = buf[0];
-					switch (id) {
-						case S2C_PLAYER_JOIN:
-							System.out.println("Player #" + buf[1] +" joined. Now " + players.size() + " players");
-							players.put(buf[1], new Vector3f(8, 14, 8));
+						}
+						case S2C_PLAYER_LEAVE: {
+							byte id = stream.readByte();
+							System.out.println("Player #" + id + " left");
+							players.remove(id);
 							break;
-						case S2C_PLAYER_LEAVE:
-							System.out.println("Player #" + buf[1] +" left");
-							players.remove(buf[1]);
+						}
+						case S2C_PLAYER_MOVE: {
+							byte id = stream.readByte();
+							float x = stream.readFloat();
+							float y = stream.readFloat();
+							float z = stream.readFloat();
+							players.put(id, new Vector3f(x, y, z));
 							break;
-						case S2C_PLAYER_MOVE:
-							int asInt = (buf[5] & 0xFF)
-									| ((buf[4] & 0xFF) << 8)
-									| ((buf[3] & 0xFF) << 16)
-									| ((buf[2] & 0xFF) << 24);
-							float x = Float.intBitsToFloat(asInt);
-							asInt = (buf[9] & 0xFF)
-									| ((buf[8] & 0xFF) << 8)
-									| ((buf[7] & 0xFF) << 16)
-									| ((buf[6] & 0xFF) << 24);
-							float y = Float.intBitsToFloat(asInt);
-							asInt = (buf[13] & 0xFF)
-									| ((buf[12] & 0xFF) << 8)
-									| ((buf[11] & 0xFF) << 16)
-									| ((buf[10] & 0xFF) << 24);
-							float z = Float.intBitsToFloat(asInt);
-
-							players.put(buf[1], new Vector3f(x, y, z));
-							break;
+						}
 					}
 				},
 				() -> {
                     try {
-						Thread.sleep(10000);
-							while(tcp_client.running) {
-                                //noinspection BusyWait
-                                Thread.sleep(100);
+						Thread.sleep(1000);
+						while(tcp_client.running) {
+                            //noinspection BusyWait
+                            Thread.sleep(100);
 							tcp_client.sendLocation(player.getPosition());
 						}
                     } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+						throw new RuntimeException(e);
+					}
 				}
 		);
 
 
 		System.out.println("Client started. Requesting Chunks");
 		for (int x = 0; x < 3; x++) {
-			for (int z = 0; z < 3; z++) {
+			for (int z = 0; z < 3 ; z++) {
+				Thread.sleep(10);
 				tcp_client.requestChunk(x, 0, z);
 			}
 		}

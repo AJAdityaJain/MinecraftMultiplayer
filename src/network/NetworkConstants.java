@@ -4,25 +4,24 @@ public class NetworkConstants {
 
     //0 -> Blank byte which will convert to byte_ID
 
-    // X:4, Y:4, Z:4
-    public static final byte C2S_CHUNK_REQUEST  = (byte) 100;
-    // ID, 0, X:4, Y:4, Z:4
-    public static final byte C2S_PLAYER_MOVE    = (byte) 103;
+    public static final byte NULL    = (byte) -1;
+    //type X:4bytes, Y:4bytes, Z:4bytes
+    public static final byte C2S_CHUNK_REQUEST  = 0x7C;
+    //type ID:1b, X:4b, Y:4b, Z:4b
+    public static final byte C2S_PLAYER_MOVE    = 0x7D;
 
 
 
-    // Chunk serial format
-    public static final byte S2C_CHUNK_SEND     = (byte) 200;
-    // ID
-    public static final byte S2C_PLAYER_JOIN    = (byte) 201;
-    // ID
-    public static final byte S2C_PLAYER_LEAVE   = (byte) 202;
-    // ID, FROM, X:4, Y:4, Z:4
-    public static final byte S2C_PLAYER_MOVE    = (byte) 203;
+    // Chunk serial format methods
+    public static final byte S2C_CHUNK_SEND     = 0x40;
+    //type ID:1b
+    public static final byte S2C_PLAYER_JOIN    = 0x51;
+    //type ID:1b
+    public static final byte S2C_PLAYER_LEAVE   = 0x41;
+    //type ID:1b, FROM:1b, X:4b, Y:4b, Z:4b
+    public static final byte S2C_PLAYER_MOVE    = 0x4D;
 
-    public static final int PACKET_SIZE = 1024;
-    public static final int TCP_PORT = 8080;
-    public static final int UDP_PORT = 8081;
+    public static final int TCP_PORT = 4444 ;
 
     public static boolean RUNNING = true;
     public static final int MAX_CLIENTS = 2;

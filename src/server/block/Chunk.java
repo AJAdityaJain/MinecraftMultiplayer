@@ -5,10 +5,7 @@ import server.util.FastNoiseLite;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
-
-import static network.NetworkConstants.PACKET_SIZE;
 
 public class Chunk {
     public static final int CHUNK_SIZE = 16;
@@ -70,9 +67,9 @@ public class Chunk {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
 
-        dos.writeByte(0);
-        dos.writeByte(0);
         dos.writeByte(type);
+        dos.writeByte(0);
+        dos.writeByte(0);
 
         // Write chunk coordinates
         dos.writeInt(chunkX);
@@ -95,8 +92,8 @@ public class Chunk {
 
         dos.flush();
         byte[] data = bos.toByteArray();
-        data[1] = (byte) ((data.length-2) & 0xFF);//first byte of the length
-        data[0] = (byte) (((data.length-2) >> 8) & 0xFF);//second byte of the length
+        data[2] = (byte) ((data.length-3) & 0xFF);//first byte of the length
+        data[1] = (byte) (((data.length-3) >> 8) & 0xFF);//second byte of the length
         return data;
     }
 
@@ -105,11 +102,6 @@ public class Chunk {
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(data);
             DataInputStream dis = new DataInputStream(bis);
-
-//            dis.readByte(); // Skip message length
-//            dis.readByte(); // Skip message length
-            dis.readByte(); // Skip chunk message type
-
 
             // Read chunk coordinates
             int chunkX = dis.readInt();
