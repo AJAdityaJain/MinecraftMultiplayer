@@ -96,7 +96,7 @@ public abstract class ShaderProgram {
 			}
 			reader.close();
 		}catch(IOException e){
-			System.out.println("Could not read file!");
+			System.out.println("Could not read shader file!");
 			System.exit(-1);
 		}
 		int shaderID = GL20.glCreateShader(type);

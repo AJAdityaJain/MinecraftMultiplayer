@@ -15,6 +15,8 @@ import server.block.Chunk;
 import server.Map;
 
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -33,10 +35,17 @@ public class Client {
 	}
 
 	public static void main(String[] args) throws InterruptedException {
+		Path currentRelativePath = Paths.get("");
+		String s = currentRelativePath.toAbsolutePath().toString();
+		System.out.println("Current absolute path is: " + s);
+		System.setProperty("org.lwjgl.librarypath", s + "\\lib\\natives");
+		System.setProperty("org.lwjgl.classpath", s + "\\lib\\jars");
 		player = new Camera();
 
 		Scanner myObj = new Scanner(System.in);
+		System.out.print("Enter IP: ");
 		String ip = myObj.nextLine();
+		System.out.print("Enter Port: ");
 		int port = myObj.nextInt();
 		tcp_client = new TCPClient(
 				new InetSocketAddress(ip, port),
