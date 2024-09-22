@@ -6,17 +6,17 @@ import org.lwjgl.util.vector.Vector3f;
 public class DynamicEntity extends Entity {
     protected float rotX, rotY, rotZ;
     protected final Vector3f hitBox;
-    protected Vector3f velocity = new Vector3f(0, 0, 0);
-    protected Vector3f acceleration = new Vector3f(0, 0, 0);
-    protected static float g = 32.656f;//Minecraft accurate units
+    protected final Vector3f velocity = new Vector3f(0, 0, 0);
+    protected final Vector3f acceleration = new Vector3f(0, 0, 0);
+    protected static final float g = 32.656f;//Minecraft accurate units
     public boolean onGround = false;
     protected final float speed;
 
     public void tick(float delta_time){
         velocity.x += delta_time * acceleration.x;
         velocity.y += delta_time * acceleration.y;
-if (!onGround)
- velocity.y -= delta_time *g;
+        if (!onGround)
+            velocity.y -= delta_time *g;
         velocity.z += delta_time * acceleration.z;
         position.x += delta_time * velocity.x;
         position.y += delta_time * velocity.y;

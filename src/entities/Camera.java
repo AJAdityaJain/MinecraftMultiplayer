@@ -48,7 +48,7 @@ public class Camera extends DynamicEntity{
 		if (!onGround) velocity.y -= delta_time *g;
 		velocity.z += delta_time * acceleration.z;
 		position.x += delta_time * (velocity.x + camVelocity.x);
-		position.y += delta_time * (velocity.y + + camVelocity.y);
+		position.y += delta_time * (velocity.y + camVelocity.y);
 		position.z += delta_time * (velocity.z + camVelocity.z);
 	}
 

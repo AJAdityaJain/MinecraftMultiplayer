@@ -55,13 +55,23 @@ public class Chunk {
         }
     }
 
+    public void setBlock(int x, int y, int z, BlockState state) {
+        if(x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+            return;
+        }
+        if(!dictionary.contains(state)) {
+            dictionary.add(state);
+        }
+        blocks[x][y][z] = (byte) dictionary.indexOf(state);
+    }
 
     public BlockState getBlock(int x, int y, int z) {
-        if(x < 0 || x >= 16 || y < 0 || y >= 16 || z < 0 || z >= 16) {
+        if(x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
             return new BlockState(BlockState.BlockEnum.NONE);
         }
         return dictionary.get(blocks[x][y][z]);
     }
+
 
     public byte[] serialize(byte type) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -97,7 +107,6 @@ public class Chunk {
         return data;
     }
 
-    // Deserialize Chunk from byte array
     public static Chunk deserialize(byte[] data) {
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(data);

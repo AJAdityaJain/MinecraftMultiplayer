@@ -14,6 +14,8 @@ public class NetworkConstants {
 
     // Chunk serial format methods
     public static final byte S2C_CHUNK_SEND     = 0x40;
+    // BlockState serial format methods
+    public static final byte S2C_BLOCK_PLACE     = 0x50;
     //type ID:1b
     public static final byte S2C_PLAYER_JOIN    = 0x51;
     //type ID:1b

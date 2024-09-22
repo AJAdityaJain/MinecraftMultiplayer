@@ -3,8 +3,6 @@ package client.rendering;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.*;
 
-import java.util.Random;
-
 public class DisplayManager {
 	public static final int FPS_CAP = 600 ;
 	public static final int WIDTH = 1920;

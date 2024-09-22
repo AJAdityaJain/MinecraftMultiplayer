@@ -22,7 +22,7 @@ public class TCPClient {
 	public boolean running;
 
 	public interface MessageListener {
-		void onMessageReceived(byte code, DataInputStream stream) throws IOException;
+		void onMessageReceived(byte code, DataInputStream stream, int toRead) throws IOException;
 	}
 
 	public TCPClient(InetSocketAddress addr, MessageListener tcp, Runnable loop) {
@@ -59,15 +59,7 @@ public class TCPClient {
 						toRead = dis.readShort();
 					}
 				} else if (code != NULL && available >= toRead) {
-					if (code == S2C_CHUNK_SEND) {
-						System.out.print("▦");
-						byte[] data = new byte[toRead];
-						dis.readFully(data);
-						Client.addChunk(Chunk.deserialize(data));
-                    } else {
-						if(code == S2C_PLAYER_MOVE) System.out.print("▲");
-						tcp_listener.onMessageReceived(code, dis);
-                    }
+						tcp_listener.onMessageReceived(code, dis,toRead);
                     code = NULL;
                 }
 

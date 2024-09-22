@@ -30,6 +30,33 @@ public class Map {
         cached = loadedChunks.getFirst();
     }
 
+    void loadChunk(int x, int y, int z) {
+        // Load the first chunk
+        loadedChunks.add(new Chunk(x,y,z));
+        loadedChunks.getLast().generate();
+        cached = loadedChunks.getLast();
+    }
+
+    public void setBlock(int x, int y, int z, BlockState state){
+        int X = x / Chunk.CHUNK_SIZE;
+        int Y = y / Chunk.CHUNK_SIZE;
+        int Z = z / Chunk.CHUNK_SIZE;
+        x = x % Chunk.CHUNK_SIZE;
+        y = y % Chunk.CHUNK_SIZE;
+        z = z % Chunk.CHUNK_SIZE;
+        if(cached.chunkX == X && cached.chunkY == Y && cached.chunkZ == Z){
+            cached.setBlock(x, y, z, state);
+            return;
+        }
+
+        for(Chunk c : loadedChunks){
+            if(c.chunkX == X && c.chunkY == Y && c.chunkZ == Z){
+                c.setBlock(x, y, z, state);
+                return;
+            }
+        }
+    }
+
     public BlockState getBlock(int x, int y, int z){
         int X = x / Chunk.CHUNK_SIZE;
         int Y = y / Chunk.CHUNK_SIZE;

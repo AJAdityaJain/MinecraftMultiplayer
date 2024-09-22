@@ -46,8 +46,20 @@ public class Mesh {
     private static byte[][][] visited = new byte[16][16][16];
     private static final HashMap<Vector3f,Byte> visitedOutside = new HashMap<>();
     private static int chunkX,chunkY,chunkZ;
+    private static float[] vertices;
+    private static float[] textureCoords;
+    private static int[] indices;
 
-    public static VAO genGreedyMeshFromChunk(Map map) {
+
+    public static VAO genGreedyMesh() {
+        VAO vao = Loader.createTempVAO(vertices,textureCoords,indices);
+        vertices = null;
+        textureCoords = null;
+        indices = null;
+        System.gc();
+        return vao;
+    }
+    public static void genGreedyMeshFromMap(Map map) {
         faces.clear();
 
         for (Chunk c : map.loadedChunks) {
@@ -99,9 +111,9 @@ public class Mesh {
         System.out.println(visitedOutside.size());
 
         visited = null;
-        float[] vertices = new float[faces.size() * 12];
-        float[] textureCoords = new float[faces.size() * 12];
-        int[] indices = new int[faces.size() * 6];
+        vertices = new float[faces.size() * 12];
+        textureCoords = new float[faces.size() * 12];
+        indices = new int[faces.size() * 6];
 
         int v = 0;
         int t = 0;
@@ -259,8 +271,6 @@ public class Mesh {
             i += 6;
         }
         faces.clear();
-        System.gc();
-        return Loader.createVAO(vertices,textureCoords,indices);
     }
 
     private static void yAxisSearch(Map chunk, int start_x, int start_y, int start_z, FaceType faceType) {

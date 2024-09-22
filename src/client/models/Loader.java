@@ -17,7 +17,6 @@ import org.newdawn.slick.opengl.TextureLoader;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.glTexSubImage3D;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
-import static org.lwjgl.opengl.GL30.glTexParameterI;
 import static org.lwjgl.opengl.GL42.glTexStorage3D;
 import static org.lwjgl.opengl.GL43.GL_TEXTURE_2D_ARRAY;
 
@@ -47,7 +46,7 @@ public class Loader {
 
 
 
-	public static int loadTexture() {
+	public static void loadTexture() {
 
 		//create a texture
 		int id = glGenTextures();
@@ -82,7 +81,6 @@ public class Loader {
 		//upload texture
 //		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, decoder.getWidth(), decoder.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
-		return id;
 	}
 
 
@@ -94,8 +92,7 @@ public class Loader {
 			GL11.glDeleteTextures(texture);
 		}
 	}
-
-	public static VAO createVAO(float[] positions, float[] textureCoords, int[] indices){
+	public static VAO createTempVAO(float[] positions, float[] textureCoords, int[] indices){
 
 		int vaoID = GL30.glGenVertexArrays();
 
@@ -110,8 +107,11 @@ public class Loader {
 		);
 
 		GL30.glBindVertexArray(0);
+		return vao;
+	}
+	public static VAO createVAO(float[] positions, float[] textureCoords, int[] indices){
+		VAO vao = createTempVAO(positions, textureCoords, indices);
 		vaos.add(vao);
-
 		return vao;
 	}
 	@SuppressWarnings("SameParameterValue")

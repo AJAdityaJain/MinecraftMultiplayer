@@ -19,9 +19,9 @@ import static client.rendering.DisplayManager.*;
 public class Renderer {
 	private final static Vector3f UNIT = new Vector3f(1,1,1);
 
-	private StaticShader shader = new StaticShader();
-	
-	public Renderer(StaticShader shader){
+	private final StaticShader shader;
+
+    public Renderer(StaticShader shader){
 
 		this.shader = shader;
 		this.shader.start();

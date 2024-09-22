@@ -11,12 +11,14 @@ import entities.StaticEntity;
 import network.TCPClient;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
+import server.block.BlockState;
 import server.block.Chunk;
 import server.Map;
 
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -29,6 +31,9 @@ public class Client {
 	private static Camera player;
 	private static TCPClient tcp_client;
 	private static final HashMap<Byte, Vector3f> players = new HashMap<>();
+	private static boolean updateMesh = false;
+	private static boolean updateMeshData = false;
+
 
 	public static void addChunk(Chunk chunk) {
 		world.addChunk(chunk);
@@ -49,7 +54,7 @@ public class Client {
 		int port = myObj.nextInt();
 		tcp_client = new TCPClient(
 				new InetSocketAddress(ip, port),
-				(code,stream) -> {
+				(code,stream,toRead) -> {
 					switch (code) {
 						case S2C_PLAYER_JOIN:{
 							byte id = stream.readByte();
@@ -71,12 +76,37 @@ public class Client {
 							players.put(id, new Vector3f(x, y, z));
 							break;
 						}
+						case S2C_CHUNK_SEND:{
+							System.out.print("▦");
+							byte[] data = new byte[toRead];
+							stream.readFully(data);
+							Client.addChunk(Chunk.deserialize(data));
+							break;
+						}
+						case S2C_BLOCK_PLACE:{
+							System.out.print("▣");
+							int x = stream.readInt();
+							int y = stream.readInt();
+							int z = stream.readInt();
+							BlockState b = BlockState.deserialize(stream);
+							world.setBlock(x, y, z, b);
+							updateMesh = true;
+							break;
+//							Client.addChunk(Chunk.deserialize(data));
+
+						}
 					}
 				},
 				() -> {
                     try {
 						Thread.sleep(1000);
 						while(tcp_client.running) {
+							if(updateMesh){
+								System.out.println("Updating Mesh data");
+								Mesh.genGreedyMeshFromMap(world);
+								updateMesh = false;
+								updateMeshData = true;
+							}
                             //noinspection BusyWait
                             Thread.sleep(100);
 							tcp_client.sendLocation(player.getPosition());
@@ -110,7 +140,8 @@ public class Client {
 	}
 
 	private static void mainLoop() {
-		StaticEntity world_mesh = new StaticEntity(Mesh.genGreedyMeshFromChunk(world), new Vector3f(0, 0, 0));
+		Mesh.genGreedyMeshFromMap(world);
+		StaticEntity world_mesh = new StaticEntity(Mesh.genGreedyMesh(), new Vector3f(0, 0, 0));
 		VAO cube_model =  Mesh.genCubeMesh();
 
 		long time = System.currentTimeMillis();
@@ -120,6 +151,12 @@ public class Client {
 		float delta_time = 0;
 
 		while (!Display.isCloseRequested()) {
+			if(updateMeshData){
+				System.out.println("Updating Mesh from data");
+				updateMeshData = false;
+				world_mesh.model.clean();
+				world_mesh =  new StaticEntity(Mesh.genGreedyMesh(), new Vector3f(0, 0, 0));
+			}
 			player.input(delta_time);
 			Vector3f v = player.getVelocity();
 			cameraCollision(v.x * delta_time, 0);
@@ -136,7 +173,7 @@ public class Client {
 
 			cube_model.bind();
 			for (Vector3f p : players.values()) {
-				renderer.render(cube_model, p, 0, 0, 0, new Vector3f(1, 1, 1));
+				renderer.render(cube_model, p, 0, 0, 0, new Vector3f(1, 2, 1));
 			}
 			cube_model.unbind();
 
