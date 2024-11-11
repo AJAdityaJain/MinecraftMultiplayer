@@ -1,9 +1,12 @@
 package entities;
 
 import client.rendering.DisplayManager;
+import client.util.Maths;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector3f;
+import server.Map;
+import server.block.BlockState;
 
 import static client.util.Maths.TAU;
 
@@ -13,6 +16,8 @@ public class Camera extends DynamicEntity{
 	private final Vector3f camVelocity = new Vector3f();
 	private final float jumpSpeed = 5f;
 	private final float uK = 1-0.1f;//Coefficient Of Kinetic Friction
+	private boolean lclick = false;
+	private boolean rclick = false;
 
 	@Override
 	public Vector3f getVelocity() {
@@ -56,7 +61,8 @@ public class Camera extends DynamicEntity{
         super(null, new Vector3f(12,14f,8), new Vector3f(.6f,1.8f,.6f), 0, 160 * 3.14f/180, 0, 4.5f);
     }
 
-	public void input(float delta_time){
+	public boolean input(Map world, float delta_time){
+		boolean blockChange = false;
 		camVelocity.x=0f;
 		camVelocity.y=0f;
 		camVelocity.z=0f;
@@ -87,6 +93,33 @@ public class Camera extends DynamicEntity{
 			velocity.y+= jumpSpeed;
 		}
 
+		if(Mouse.isButtonDown(0))
+			lclick = true;
+		else if (lclick) {
+			lclick = false;
+
+			Vector3f hit = new Vector3f();
+			if(Maths.drawLine(world,hit,position.x, position.y, position.z, -rotX, -rotY, 10,true) != null){
+				System.out.println("Block Hit");
+				world.setBlock((int) hit.x, (int) hit.y, (int) hit.z, new BlockState(BlockState.BlockEnum.AIR));
+			}
+			blockChange = true;
+
+
+		}
+		if(Mouse.isButtonDown(1))
+			rclick = true;
+		else if (rclick) {
+			rclick = false;
+
+			Vector3f hit = new Vector3f();
+			if(Maths.drawLine(world,hit,position.x, position.y, position.z, -rotX, -rotY, 10,false) != null){
+				world.setBlock((int) hit.x, (int) hit.y, (int) hit.z, new BlockState(BlockState.BlockEnum.DIRT));
+			}
+			blockChange = true;
+
+		}
+
 
 		if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
 			inGame = !inGame;
@@ -102,6 +135,7 @@ public class Camera extends DynamicEntity{
 
 			Mouse.setCursorPosition(DisplayManager.WIDTH_HALF, DisplayManager.HEIGHT_HALF);
 		}
+		return blockChange;
 	}
 
 }

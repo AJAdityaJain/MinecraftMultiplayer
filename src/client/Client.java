@@ -1,7 +1,6 @@
 package client;
 
 import client.models.Loader;
-import client.models.VAO;
 import client.rendering.DisplayManager;
 import client.rendering.Renderer;
 import client.shader.StaticShader;
@@ -18,7 +17,6 @@ import server.Map;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -31,7 +29,7 @@ public class Client {
 	private static Camera player;
 	private static TCPClient tcp_client;
 	private static final HashMap<Byte, Vector3f> players = new HashMap<>();
-	private static boolean updateMesh = false;
+	private static boolean updateMesh = true;
 	private static boolean updateMeshData = false;
 
 
@@ -99,7 +97,6 @@ public class Client {
 				},
 				() -> {
                     try {
-						Thread.sleep(1000);
 						while(tcp_client.running) {
 							if(updateMesh){
 								System.out.println("Updating Mesh data");
@@ -121,7 +118,6 @@ public class Client {
 		System.out.println("Client started. Requesting Chunks");
 		for (int x = 0; x < 3; x++) {
 			for (int z = 0; z < 3 ; z++) {
-				Thread.sleep(10);
 				tcp_client.requestChunk(x, 0, z);
 			}
 		}
@@ -130,7 +126,7 @@ public class Client {
 		Loader.loadTexture();
 		renderer = new Renderer(new StaticShader());
 
-		Thread.sleep(500);
+		Thread.sleep(100);
 		mainLoop();
 
 		tcp_client.stop();
@@ -140,9 +136,8 @@ public class Client {
 	}
 
 	private static void mainLoop() {
-		Mesh.genGreedyMeshFromMap(world);
-		StaticEntity world_mesh = new StaticEntity(Mesh.genGreedyMesh(), new Vector3f(0, 0, 0));
-		VAO cube_model =  Mesh.genCubeMesh();
+//		Mesh.genGreedyMeshFromMap(world);
+		StaticEntity world_mesh = null;
 
 		long time = System.currentTimeMillis();
 		long new_time;
@@ -154,10 +149,13 @@ public class Client {
 			if(updateMeshData){
 				System.out.println("Updating Mesh from data");
 				updateMeshData = false;
-				world_mesh.model.clean();
-				world_mesh =  new StaticEntity(Mesh.genGreedyMesh(), new Vector3f(0, 0, 0));
+				if(world_mesh != null) world_mesh.model.clean();
+				world_mesh = new StaticEntity(Mesh.genGreedyMesh(), new Vector3f(0, 0, 0));
 			}
-			player.input(delta_time);
+			if(player.input(world,delta_time)){
+//				players.put((byte) -1, player.getPosition());
+				updateMesh = true;
+			}
 			Vector3f v = player.getVelocity();
 			cameraCollision(v.x * delta_time, 0);
 			cameraCollision(v.y * delta_time, 1);
@@ -171,11 +169,11 @@ public class Client {
 			renderer.renderWorld(world_mesh);
 			world_mesh.model.unbind();
 
-			cube_model.bind();
-			for (Vector3f p : players.values()) {
-				renderer.render(cube_model, p, 0, 0, 0, new Vector3f(1, 2, 1));
-			}
-			cube_model.unbind();
+//			cube_model.bind();
+//			for (Vector3f p : players.values()) {
+//				renderer.render(cube_model, p, 0, 0, 0, new Vector3f(1, 1, 1));
+//			}
+//			cube_model.unbind();
 
 			DisplayManager.updateDisplay();
 
