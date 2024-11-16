@@ -1,6 +1,7 @@
 package server.block;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class BlockState {
@@ -30,17 +31,22 @@ public class BlockState {
             case GRASS:
                 return 2;
             default:
-                System.out.println("Block not found");
+                System.out.println("Block not found : " + blockType);
                 System.exit(-1);
                 return -1;
         }
     }
 
-    public int serialize() {
-        return blockType.ordinal();
+    public final int getSerializedSize(){
+        return 4;
+    }
+    public void serialize(DataOutputStream dos) throws IOException {
+        dos.writeInt(blockType.ordinal());
     }
 
     public static BlockState deserialize(DataInputStream dis) throws IOException {
-        return new BlockState(BlockEnum.values()[dis.readInt()]);
+        return new BlockState(
+                BlockEnum.values()[dis.readInt()]
+        );
     }
 }

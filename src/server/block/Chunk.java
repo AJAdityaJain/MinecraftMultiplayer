@@ -97,7 +97,7 @@ public class Chunk {
         dos.writeInt(dictionary.size());
         for (BlockState state : dictionary) {
             // Assuming BlockState has its own serialize method
-            dos.writeInt(state.serialize());
+            state.serialize(dos);
         }
 
         dos.flush();

@@ -5,7 +5,9 @@ import server.block.Chunk;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
+import static client.rendering.DisplayManager.RENDER_DISTANCE_SQ;
 import static network.NetworkConstants.S2C_CHUNK_SEND;
 
 public class Map {
@@ -90,6 +92,20 @@ public class Map {
                 return c.serialize(S2C_CHUNK_SEND);
             }
         }
-        return null;
+        loadChunk(x,y,z);
+        return cached.serialize(S2C_CHUNK_SEND);
+    }
+
+    public boolean tryUnload(int x, int y, int z) {
+        boolean ret = false;
+        Iterator<Chunk> it = loadedChunks.iterator();
+        while (it.hasNext()){
+            Chunk c = it.next();
+            if( (c.chunkX-x) * (c.chunkX-x) + (c.chunkY-y)*(c.chunkY-y) +(c.chunkZ-z)*(c.chunkZ-z)>RENDER_DISTANCE_SQ){
+                it.remove();
+                ret = true ;
+            }
+        }
+        return ret;
     }
 }

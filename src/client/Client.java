@@ -1,12 +1,14 @@
 package client;
 
 import client.models.Loader;
+import client.models.VAO;
 import client.rendering.DisplayManager;
 import client.rendering.Renderer;
 import client.shader.StaticShader;
 import client.util.Mesh;
 import entities.Camera;
 import entities.StaticEntity;
+import network.DummyPlayer;
 import network.TCPClient;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
@@ -20,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Scanner;
 
+import static client.rendering.DisplayManager.*;
 import static network.NetworkConstants.*;
 
 
@@ -28,7 +31,7 @@ public class Client {
 	private static Renderer renderer;
 	private static Camera player;
 	private static TCPClient tcp_client;
-	private static final HashMap<Byte, Vector3f> players = new HashMap<>();
+	private static final HashMap<Byte, DummyPlayer> players = new HashMap<>();
 	private static boolean updateMesh = true;
 	private static boolean updateMeshData = false;
 
@@ -57,7 +60,7 @@ public class Client {
 						case S2C_PLAYER_JOIN:{
 							byte id = stream.readByte();
 							System.out.println("Player #" + id +" joined. Now " + players.size() + " players");
-							players.put(id, new Vector3f(8, 14, 8));
+							players.put(id, new DummyPlayer(0,0,0,0, 8));
 							break;
 						}
 						case S2C_PLAYER_LEAVE: {
@@ -71,7 +74,11 @@ public class Client {
 							float x = stream.readFloat();
 							float y = stream.readFloat();
 							float z = stream.readFloat();
-							players.put(id, new Vector3f(x, y, z));
+							float rx = stream.readFloat();
+							float ry = stream.readFloat();
+							DummyPlayer d = players.get(id);
+							if(d == null) d = new DummyPlayer(x,y,z,rx,ry);
+							else d.set(x, y, z,rx, ry);
 							break;
 						}
 						case S2C_CHUNK_SEND:{
@@ -106,7 +113,7 @@ public class Client {
 							}
                             //noinspection BusyWait
                             Thread.sleep(100);
-							tcp_client.sendLocation(player.getPosition());
+							tcp_client.sendPlayer(player.getPosition(),player.getRotX(),player.getRotY());
 						}
                     } catch (InterruptedException e) {
 						throw new RuntimeException(e);
@@ -116,11 +123,17 @@ public class Client {
 
 
 		System.out.println("Client started. Requesting Chunks");
-		for (int x = 0; x < 3; x++) {
-			for (int z = 0; z < 3 ; z++) {
-				tcp_client.requestChunk(x, 0, z);
-			}
-		}
+
+		int px = (int)(player.getPosition().x/16);
+		int py = (int)(player.getPosition().y/16);
+		int pz = (int)(player.getPosition().z/16);
+		for (int i = -RENDER_DISTANCE; i < RENDER_DISTANCE+1; i ++)
+			for (int j = -RENDER_HEIGHT; j < RENDER_HEIGHT+1; j ++)
+				for (int k = -RENDER_DISTANCE; k < RENDER_DISTANCE+1; k ++){
+					if(i * i + k * k <= RENDER_DISTANCE_SQ && i+px >=0 && k + pz >= 0 && j + py >= 0){
+						tcp_client.requestChunk(i+px, j + py, k+pz);
+					}
+				}
 
 		DisplayManager.createDisplay();
 		Loader.loadTexture();
@@ -138,6 +151,7 @@ public class Client {
 	private static void mainLoop() {
 //		Mesh.genGreedyMeshFromMap(world);
 		StaticEntity world_mesh = null;
+		VAO cube_model = Mesh.genCubeMesh();
 
 		long time = System.currentTimeMillis();
 		long new_time;
@@ -152,8 +166,7 @@ public class Client {
 				if(world_mesh != null) world_mesh.model.clean();
 				world_mesh = new StaticEntity(Mesh.genGreedyMesh(), new Vector3f(0, 0, 0));
 			}
-			if(player.input(world,delta_time)){
-//				players.put((byte) -1, player.getPosition());
+			if(player.input(world, tcp_client,delta_time)){
 				updateMesh = true;
 			}
 			Vector3f v = player.getVelocity();
@@ -169,17 +182,18 @@ public class Client {
 			renderer.renderWorld(world_mesh);
 			world_mesh.model.unbind();
 
-//			cube_model.bind();
-//			for (Vector3f p : players.values()) {
-//				renderer.render(cube_model, p, 0, 0, 0, new Vector3f(1, 1, 1));
-//			}
-//			cube_model.unbind();
+			cube_model.bind();
+			for (DummyPlayer p : players.values()) {
+				renderer.render(cube_model, p.position, p.rotX, p.rotY, 0, new Vector3f(1, 1, 1));
+			}
+			cube_model.unbind();
 
 			DisplayManager.updateDisplay();
 
 			frame_idx_k += 1000;
 			if (frame_idx_k == samples) {
-				Display.setTitle(players.size() + " players online");
+				updateMesh =  world.tryUnload((int) (player.getPosition().x/16), (int) (player.getPosition().y/16), (int) (player.getPosition().z/16));
+
 				new_time = System.currentTimeMillis();
 
 				delta_time = (float) (new_time - time) / samples;

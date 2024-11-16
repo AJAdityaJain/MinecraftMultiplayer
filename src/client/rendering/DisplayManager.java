@@ -4,7 +4,10 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.*;
 
 public class DisplayManager {
-	public static final int FPS_CAP = 600 ;
+	public static final int RENDER_DISTANCE = 5;
+	public static final int RENDER_HEIGHT = 0;
+	public static final int RENDER_DISTANCE_SQ = RENDER_DISTANCE*RENDER_DISTANCE;
+	public static final int FPS_CAP = 600;
 	public static final int WIDTH = 1920;
 	public static final int HEIGHT = 1080;
 	public static final int WIDTH_HALF = WIDTH/2;

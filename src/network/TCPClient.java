@@ -1,8 +1,7 @@
 package network;
 
-import client.Client;
 import org.lwjgl.util.vector.Vector3f;
-import server.block.Chunk;
+import server.block.BlockState;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -86,18 +85,38 @@ public class TCPClient {
 		}
 	}
 
-	public void sendLocation(Vector3f position) {
+	public void sendPlayer(Vector3f position, float rx, float ry) {
+		{
+			try {
+				stream.writeByte(C2S_PLAYER_MOVE);
+				stream.writeFloat(position.x);
+				stream.writeFloat(position.y);
+				stream.writeFloat(position.z);
+				stream.writeFloat(rx);
+				stream.writeFloat(ry);
+				stream.flush();
+				tcp_output.flush();
+			} catch (IOException e) {
+				System.out.println("Error sending player: " + e.getMessage());
+			}
+		}
+	}
+
+	public void updateBlock(BlockState state, int x, int y, int z) {
 		try {
-			stream.writeByte(C2S_PLAYER_MOVE);
-			stream.writeByte(0);
-			stream.writeFloat(position.x);
-			stream.writeFloat(position.y);
-			stream.writeFloat(position.z);
+			short sz = (short) (12 + state.getSerializedSize());
+			System.out.println("Sending block update with size " + sz);
+
+			stream.writeByte(C2S_BLOCK_PLACE);
+			stream.writeShort(sz);
+			stream.writeInt(x);
+			stream.writeInt(y);
+			stream.writeInt(z);
+			state.serialize(stream);
 			stream.flush();
 			tcp_output.flush();
-		}
-		catch (IOException e){
-			System.out.println("Error sending message: " + e.getMessage());
+		} catch (IOException e) {
+			System.out.println("Error sending block update: " + e.getMessage());
 		}
 	}
 

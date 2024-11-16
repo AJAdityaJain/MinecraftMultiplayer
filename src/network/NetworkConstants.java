@@ -9,6 +9,8 @@ public class NetworkConstants {
     public static final byte C2S_CHUNK_REQUEST  = 0x7C;
     //type ID:1b, X:4b, Y:4b, Z:4b
     public static final byte C2S_PLAYER_MOVE    = 0x7D;
+    // BlockState serial format methods
+    public static final byte C2S_BLOCK_PLACE    = 0x70;
 
 
 
