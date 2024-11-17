@@ -11,6 +11,8 @@ public class NetworkConstants {
     public static final byte C2S_PLAYER_MOVE    = 0x7D;
     // BlockState serial format methods
     public static final byte C2S_BLOCK_PLACE    = 0x70;
+    //type short string
+    public static final byte C2S_LOG            = 0x60;
 
 
 
@@ -27,6 +29,7 @@ public class NetworkConstants {
 
     public static final int TCP_PORT = 4444 ;
 
+    @SuppressWarnings("CanBeFinal")
     public static boolean RUNNING = true;
     public static final int MAX_CLIENTS = 2;
 

@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
+@SuppressWarnings("unused")
 public abstract class ShaderProgram {
 	
 	private final int programID;
@@ -104,8 +105,7 @@ public abstract class ShaderProgram {
 		GL20.glCompileShader(shaderID);
         //noinspection deprecation
         if(GL20.glGetShader(shaderID, GL20.GL_COMPILE_STATUS )== GL11.GL_FALSE){
-			System.out.println(GL20.glGetShaderInfoLog(shaderID, 500));
-			System.err.println("Could not compile shader!");
+			System.out.println(GL20.glGetShaderInfoLog(shaderID, 500) + "\nCould not compile shader!");
 			System.exit(-1);
 		}
 		return shaderID;

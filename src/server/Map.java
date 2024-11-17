@@ -1,17 +1,19 @@
 package server;
 
+import network.TCPClient;
+import org.lwjgl.util.vector.Vector3f;
 import server.block.BlockState;
 import server.block.Chunk;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import static client.rendering.DisplayManager.RENDER_DISTANCE_SQ;
+import static client.rendering.DisplayManager.*;
 import static network.NetworkConstants.S2C_CHUNK_SEND;
 
 public class Map {
-    public final ArrayList<Chunk> loadedChunks = new ArrayList<>();
+    public final CopyOnWriteArrayList<Vector3f> loadingChunks = new CopyOnWriteArrayList<>();
+    public final CopyOnWriteArrayList<Chunk> loadedChunks = new CopyOnWriteArrayList<>();
     private Chunk cached;
 
     public Map() {}
@@ -96,16 +98,35 @@ public class Map {
         return cached.serialize(S2C_CHUNK_SEND);
     }
 
-    public boolean tryUnload(int x, int y, int z) {
+    public boolean tryUnload(int px, int py, int pz) {
         boolean ret = false;
-        Iterator<Chunk> it = loadedChunks.iterator();
-        while (it.hasNext()){
-            Chunk c = it.next();
-            if( (c.chunkX-x) * (c.chunkX-x) + (c.chunkY-y)*(c.chunkY-y) +(c.chunkZ-z)*(c.chunkZ-z)>RENDER_DISTANCE_SQ){
-                it.remove();
-                ret = true ;
+        for (Chunk c : loadedChunks) {
+            if ((c.chunkX - px) * (c.chunkX - px) + (c.chunkY - py) * (c.chunkY - py) + (c.chunkZ - pz) * (c.chunkZ - pz) > RENDER_DISTANCE_SQ) {
+                ret = true;
+                loadedChunks.remove(c);
             }
         }
         return ret;
+    }
+
+    public void tryLoad(int px, int py, int pz, TCPClient tcp_client) {
+        for (int i = -RENDER_DISTANCE; i < RENDER_DISTANCE+1; i ++)
+            for (int j = -RENDER_HEIGHT; j < RENDER_HEIGHT+1; j ++)
+                k:for (int k = -RENDER_DISTANCE; k < RENDER_DISTANCE+1; k ++){
+                    if(i * i + k * k <= RENDER_DISTANCE_SQ && i+px >=0 && j + pz >= 0 && k + py >= 0){
+                        for (Vector3f v: loadingChunks) {
+                            if (v.x == i + px && v.y == j + py && v.z == k + pz) {
+                                continue k;
+                            }
+                        }
+                        for (Chunk c : loadedChunks) {
+                            if (c.chunkX == i + px && c.chunkY == j + py && c.chunkZ == k + pz) {
+                                continue k;
+                            }
+                        }
+                        tcp_client.requestChunk(i+px, j + py, k+pz);
+                        loadingChunks.add(new Vector3f(i+px, j + py, k+pz));
+                    }
+                }
     }
 }

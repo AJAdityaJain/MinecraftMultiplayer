@@ -1,5 +1,6 @@
 package network;
 
+import client.Client;
 import org.lwjgl.util.vector.Vector3f;
 import server.block.BlockState;
 
@@ -38,7 +39,10 @@ public class TCPClient {
 			new Thread(loop).start();
 		}
 		catch (IOException e) {
+			System.out.println("Error connecting to server: " + e.getMessage());
+			System.exit(-1);
 			throw new RuntimeException("Error connecting to server: " + e.getMessage());
+
 		}
 	}
 
@@ -65,14 +69,13 @@ public class TCPClient {
 			}
 
 		} catch (IOException e) {
-			System.out.println("Error reading from server: " + e.getMessage());
+			Client.log("Error reading TCP message: " + e.getMessage(), Logger.ERROR);
 			System.exit(-1);
 		}
 	}
 
 	public void requestChunk(int x, int y, int z){
 		try{
-
 			stream.writeByte(C2S_CHUNK_REQUEST);
 			stream.writeInt(x);
 			stream.writeInt(y);
@@ -81,7 +84,8 @@ public class TCPClient {
 			tcp_output.flush();
 		}
 		catch (IOException e){
-			System.out.println("Error sending message: " + e.getMessage());
+			Client.log("Error requesting chunk: " + e.getMessage(), Logger.ERROR);
+			System.exit(-1);
 		}
 	}
 
@@ -97,7 +101,7 @@ public class TCPClient {
 				stream.flush();
 				tcp_output.flush();
 			} catch (IOException e) {
-				System.out.println("Error sending player: " + e.getMessage());
+				Client.log("Error sending player position: " + e.getMessage(), Logger.ERROR);
 			}
 		}
 	}
@@ -105,7 +109,6 @@ public class TCPClient {
 	public void updateBlock(BlockState state, int x, int y, int z) {
 		try {
 			short sz = (short) (12 + state.getSerializedSize());
-			System.out.println("Sending block update with size " + sz);
 
 			stream.writeByte(C2S_BLOCK_PLACE);
 			stream.writeShort(sz);
@@ -116,7 +119,23 @@ public class TCPClient {
 			stream.flush();
 			tcp_output.flush();
 		} catch (IOException e) {
-			System.out.println("Error sending block update: " + e.getMessage());
+			log("Error sending block update: " + e.getMessage(), Logger.ERROR);
+			System.exit(-1);
+		}
+	}
+
+	public void log(String message, byte id) {
+		try {
+			byte[] data = message.getBytes();
+			stream.writeByte(C2S_LOG);
+			stream.writeShort(data.length);
+			stream.write(data);
+			stream.writeByte(id);
+			stream.flush();
+			tcp_output.flush();
+		} catch (IOException e) {
+			System.out.println(message);
+			System.out.println("Error sending this log: " + e.getMessage());
 		}
 	}
 
@@ -126,7 +145,8 @@ public class TCPClient {
 			tcp_socket.close();
 		}
 		catch (IOException e){
-			System.out.println("Error closing client: " + e.getMessage());
+			log("Error stopping client: " + e.getMessage(), Logger.ERROR);
+			System.exit(-1);
 		}
 	}
 

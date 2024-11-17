@@ -1,6 +1,8 @@
 package server.block;
 
 
+import client.Client;
+import network.Logger;
 import server.util.FastNoiseLite;
 
 import java.io.*;
@@ -137,7 +139,7 @@ public class Chunk {
             return chunk;
         }
         catch (Exception e) {
-            System.out.println("Corrupt chunk data");
+            Client.log("Failed to deserialize chunk", Logger.ERROR);
             System.exit(-1);
         }
         return null;

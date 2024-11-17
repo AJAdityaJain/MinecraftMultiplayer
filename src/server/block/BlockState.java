@@ -1,5 +1,8 @@
 package server.block;
 
+import client.Client;
+import network.Logger;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -31,7 +34,7 @@ public class BlockState {
             case GRASS:
                 return 2;
             default:
-                System.out.println("Block not found : " + blockType);
+                Client.log("BlockState.getSlice() called on non-textured block", Logger.ERROR);
                 System.exit(-1);
                 return -1;
         }

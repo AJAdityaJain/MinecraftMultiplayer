@@ -9,6 +9,7 @@ import client.util.Mesh;
 import entities.Camera;
 import entities.StaticEntity;
 import network.DummyPlayer;
+import network.Logger;
 import network.TCPClient;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
@@ -22,7 +23,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import static client.rendering.DisplayManager.*;
 import static network.NetworkConstants.*;
 
 
@@ -35,6 +35,10 @@ public class Client {
 	private static boolean updateMesh = true;
 	private static boolean updateMeshData = false;
 
+	public static void log(String s,byte lvl){
+		tcp_client.log(s, lvl);
+
+	}
 
 	public static void addChunk(Chunk chunk) {
 		world.addChunk(chunk);
@@ -43,7 +47,6 @@ public class Client {
 	public static void main(String[] args) throws InterruptedException {
 		Path currentRelativePath = Paths.get("");
 		String s = currentRelativePath.toAbsolutePath().toString();
-		System.out.println("Current absolute path is: " + s);
 		System.setProperty("org.lwjgl.librarypath", s + "\\lib\\natives");
 		System.setProperty("org.lwjgl.classpath", s + "\\lib\\jars");
 		player = new Camera();
@@ -85,7 +88,19 @@ public class Client {
 							System.out.print("▦");
 							byte[] data = new byte[toRead];
 							stream.readFully(data);
-							Client.addChunk(Chunk.deserialize(data));
+							Chunk ch = Chunk.deserialize(data);
+							Client.addChunk(ch);
+							boolean b = false;
+							for (Vector3f v : world.loadingChunks){
+								if (v.x == ch.chunkX && v.y == ch.chunkY && v.z == ch.chunkZ){
+									world.loadingChunks.remove(v);
+									b = true;
+								}
+							}
+							if(!b) {
+								Client.log("Received chunk was not requested", Logger.ERROR);
+								System.exit(-1);
+							}
 							break;
 						}
 						case S2C_BLOCK_PLACE:{
@@ -106,7 +121,6 @@ public class Client {
                     try {
 						while(tcp_client.running) {
 							if(updateMesh){
-								System.out.println("Updating Mesh data");
 								Mesh.genGreedyMeshFromMap(world);
 								updateMesh = false;
 								updateMeshData = true;
@@ -116,24 +130,16 @@ public class Client {
 							tcp_client.sendPlayer(player.getPosition(),player.getRotX(),player.getRotY());
 						}
                     } catch (InterruptedException e) {
-						throw new RuntimeException(e);
+						Client.log("Interrupt Exception: " + e.getMessage(), Logger.ERROR);
 					}
 				}
 		);
 
-
-		System.out.println("Client started. Requesting Chunks");
-
 		int px = (int)(player.getPosition().x/16);
 		int py = (int)(player.getPosition().y/16);
 		int pz = (int)(player.getPosition().z/16);
-		for (int i = -RENDER_DISTANCE; i < RENDER_DISTANCE+1; i ++)
-			for (int j = -RENDER_HEIGHT; j < RENDER_HEIGHT+1; j ++)
-				for (int k = -RENDER_DISTANCE; k < RENDER_DISTANCE+1; k ++){
-					if(i * i + k * k <= RENDER_DISTANCE_SQ && i+px >=0 && k + pz >= 0 && j + py >= 0){
-						tcp_client.requestChunk(i+px, j + py, k+pz);
-					}
-				}
+		world.tryLoad(px, py, pz, tcp_client);
+
 
 		DisplayManager.createDisplay();
 		Loader.loadTexture();
@@ -192,7 +198,13 @@ public class Client {
 
 			frame_idx_k += 1000;
 			if (frame_idx_k == samples) {
-				updateMesh =  world.tryUnload((int) (player.getPosition().x/16), (int) (player.getPosition().y/16), (int) (player.getPosition().z/16));
+				int px = (int)(player.getPosition().x/16);
+				int py = (int)(player.getPosition().y/16);
+				int pz = (int)(player.getPosition().z/16);
+				updateMesh = world.tryUnload(px, py, pz);
+				if(updateMesh) world.tryLoad(px, py, pz, tcp_client);
+
+
 
 				new_time = System.currentTimeMillis();
 

@@ -1,5 +1,6 @@
 package server;
 
+import network.Logger;
 import network.TCPClientHandler;
 
 import java.io.IOException;
@@ -13,8 +14,8 @@ import static network.TCPClientHandler.clients;
 
 public class Server {
 	public static final Map world = new Map();
-	public static int TPS = 20;
-	public static int TICK_TIME = 1000 / TPS;
+	public static final int TPS = 20;
+	public static final int TICK_TIME = 1000 / TPS;
 
 	public static void main(String[] args) throws InterruptedException, IOException {
 		new Thread(TCPClientHandler::startTCPServer).start();
@@ -41,7 +42,7 @@ public class Server {
 					TCPClientHandler p = TCPClientHandler.clients.get(addr);
 					long delta = l - p.lastUpdate;
 					if(delta > 2000 && delta < 100000){
-						System.out.println("Player " + p.getId() + " timed out");
+						Logger.log("Player " + p.getId() + " timed out",Logger.ERROR);
 						TCPClientHandler.broadcast(new byte[]{S2C_PLAYER_LEAVE, p.getId()}, p.getId());
 						clients.remove(addr);
 					}

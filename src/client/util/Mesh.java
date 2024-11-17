@@ -4,7 +4,6 @@ import client.models.Loader;
 import client.models.VAO;
 import org.lwjgl.util.vector.Vector3f;
 import server.block.BlockState;
-import server.block.Chunk;
 import server.Map;
 
 import java.util.ArrayList;
@@ -151,10 +150,10 @@ public class Mesh {
     public static void genGreedyMeshFromMap(Map map) {
         faces.clear();
 
-        for (Chunk c : map.loadedChunks) {
-            chunkX = c.chunkX;
-            chunkY = c.chunkY;
-            chunkZ = c.chunkZ;
+        for (int i = 0; i < map.loadedChunks.size(); i ++) {
+            chunkX = map.loadedChunks.get(i).chunkX;
+            chunkY = map.loadedChunks.get(i).chunkY;
+            chunkZ = map.loadedChunks.get(i).chunkZ;
 
             visited = new byte[16][16][16];
 
@@ -171,9 +170,9 @@ public class Mesh {
             }
 
 
-            for (int x = c.chunkX*CHUNK_SIZE; x < (c.chunkX+1)*CHUNK_SIZE; x++) {
-                for (int y = c.chunkY*CHUNK_SIZE; y < (c.chunkY+1)*CHUNK_SIZE; y++) {
-                    for (int z = c.chunkZ*CHUNK_SIZE; z < (c.chunkZ+1)*CHUNK_SIZE; z++) {
+            for (int x = chunkX*CHUNK_SIZE; x < (chunkX+1)*CHUNK_SIZE; x++) {
+                for (int y = chunkY*CHUNK_SIZE; y < (chunkY+1)*CHUNK_SIZE; y++) {
+                    for (int z = chunkZ*CHUNK_SIZE; z < (chunkZ+1)*CHUNK_SIZE; z++) {
                         if (tryStart(map, FaceType.RIGHT, x, y, z)) {
                             xAxisSearch(map, x, y, z, FaceType.RIGHT);
                         }
@@ -197,7 +196,7 @@ public class Mesh {
             }
         }
 
-        System.out.println(visitedOutside.size());
+        System.out.println(" WHAT IS THIS MEAN" + visitedOutside.size());
 
         visited = null;
         vertices = new float[faces.size() * 12];
@@ -362,15 +361,15 @@ public class Mesh {
         faces.clear();
     }
 
-    private static void yAxisSearch(Map chunk, int start_x, int start_y, int start_z, FaceType faceType) {
+    private static void yAxisSearch(Map map, int start_x, int start_y, int start_z, FaceType faceType) {
         int dir = faceType == FaceType.TOP ? 1 : -1;
-        BlockState block = chunk.getBlock(start_x, start_y, start_z);
-        if (block.blockType != BlockState.BlockEnum.AIR && chunk.isAir(start_x, start_y + dir, start_z)) {
+        BlockState block = map.getBlock(start_x, start_y, start_z);
+        if (block.blockType != BlockState.BlockEnum.AIR && map.isAir(start_x, start_y + dir, start_z)) {
             visit( faceType, start_x, start_y, start_z);
             Face f = new Face(start_x, start_y, start_z, 1, 1,block.getSlice(), faceType);
 
             for (int x = 1; x <= f.width; x++) {
-                if (tryVisit(chunk,faceType, start_x + x, start_y, start_z,block.blockType) && chunk.isAir(start_x + x, start_y + dir, start_z)) {
+                if (tryVisit(map,faceType, start_x + x, start_y, start_z,block.blockType) && map.isAir(start_x + x, start_y + dir, start_z)) {
                     visit(faceType,start_x + x, start_y, start_z);
                     f.width++;
                 } else {
@@ -380,7 +379,7 @@ public class Mesh {
             for (int z = 1; z <= f.height; z++) {
                 boolean b = true;
                 for (int x = 0; x < f.width; x++) {
-                    if (!tryVisit(chunk,faceType,start_x + x, start_y, start_z + z,block.blockType) || !chunk.isAir(start_x + x, start_y + dir, start_z + z)) {
+                    if (!tryVisit(map,faceType,start_x + x, start_y, start_z + z,block.blockType) || !map.isAir(start_x + x, start_y + dir, start_z + z)) {
                         b = false;
                         break;
 
@@ -399,16 +398,16 @@ public class Mesh {
         }
 
     }
-    private static void xAxisSearch(Map chunk, int start_x, int start_y, int start_z, FaceType faceType) {
+    private static void xAxisSearch(Map map, int start_x, int start_y, int start_z, FaceType faceType) {
         int dir = faceType == FaceType.RIGHT ? 1 : -1;
-        BlockState block = chunk.getBlock(start_x, start_y, start_z);
+        BlockState block = map.getBlock(start_x, start_y, start_z);
 
-        if (block.blockType != BlockState.BlockEnum.AIR && chunk.isAir(start_x + dir, start_y, start_z)) {
+        if (block.blockType != BlockState.BlockEnum.AIR && map.isAir(start_x + dir, start_y, start_z)) {
             visit( faceType, start_x, start_y, start_z);
             Face f = new Face(start_x, start_y, start_z, 1, 1,block.getSlice(), faceType);
 
             for (int y = 1; y <= f.height; y++) {
-                if (tryVisit(chunk,faceType, start_x, start_y + y, start_z,block.blockType) && chunk.isAir(start_x + dir, start_y + y, start_z)) {
+                if (tryVisit(map,faceType, start_x, start_y + y, start_z,block.blockType) && map.isAir(start_x + dir, start_y + y, start_z)) {
                     visit(faceType,start_x, start_y + y, start_z);
                     f.height++;
                 } else {
@@ -418,7 +417,7 @@ public class Mesh {
             for (int z = 1; z <= f.width; z++) {
                 boolean b = true;
                 for (int y = 0; y < f.height; y++) {
-                    if (!tryVisit(chunk,faceType,start_x, start_y + y, start_z + z,block.blockType) || !chunk.isAir(start_x + dir, start_y + y, start_z + z)) {
+                    if (!tryVisit(map,faceType,start_x, start_y + y, start_z + z,block.blockType) || !map.isAir(start_x + dir, start_y + y, start_z + z)) {
                         b = false;
                         break;
 
@@ -436,15 +435,15 @@ public class Mesh {
 
         }
     }
-    private static void zAxisSearch(Map chunk, int start_x, int start_y, int start_z, FaceType faceType) {
+    private static void zAxisSearch(Map map, int start_x, int start_y, int start_z, FaceType faceType) {
         int dir = faceType == FaceType.FRONT ? 1 : -1;
-        BlockState block = chunk.getBlock(start_x, start_y, start_z);
-        if (block.blockType != BlockState.BlockEnum.AIR && chunk.isAir(start_x, start_y, start_z + dir)) {
+        BlockState block = map.getBlock(start_x, start_y, start_z);
+        if (block.blockType != BlockState.BlockEnum.AIR && map.isAir(start_x, start_y, start_z + dir)) {
             visit( faceType, start_x, start_y, start_z);
             Face f = new Face(start_x, start_y, start_z, 1, 1, block.getSlice(), faceType);
 
             for (int x = 1; x <= f.width; x++) {
-                if (tryVisit(chunk,faceType, start_x + x, start_y, start_z,block.blockType) && chunk.isAir(start_x + x, start_y, start_z + dir)) {
+                if (tryVisit(map,faceType, start_x + x, start_y, start_z,block.blockType) && map.isAir(start_x + x, start_y, start_z + dir)) {
                     visit(faceType,start_x + x, start_y, start_z);
                     f.width++;
                 } else {
@@ -454,7 +453,7 @@ public class Mesh {
             for (int y = 1; y <= f.height; y++) {
                 boolean b = true;
                 for (int x = 0; x < f.width; x++) {
-                    if (!tryVisit(chunk,faceType,start_x + x, start_y + y, start_z,block.blockType) || !chunk.isAir(start_x + x, start_y + y, start_z + dir)) {
+                    if (!tryVisit(map,faceType,start_x + x, start_y + y, start_z,block.blockType) || !map.isAir(start_x + x, start_y + y, start_z + dir)) {
                         b = false;
                         break;
 

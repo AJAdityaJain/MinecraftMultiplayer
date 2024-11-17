@@ -8,11 +8,11 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static java.lang.System.exit;
 import static network.NetworkConstants.*;
 
 public class TCPClientHandler implements Runnable {
@@ -21,7 +21,7 @@ public class TCPClientHandler implements Runnable {
     private static final ExecutorService clientPool = Executors.newFixedThreadPool(MAX_CLIENTS);
     public static ServerSocket serverSocket;
     public static void startTCPServer() {
-        System.out.println("TCP Server started...");
+        Logger.log("Starting TCP server on port " + TCP_PORT, Logger.INFO);
         try {
             serverSocket = new ServerSocket(TCP_PORT);
             byte id_counter = 0;
@@ -32,7 +32,7 @@ public class TCPClientHandler implements Runnable {
                 clientPool.execute(clients.get(clientSocket.getRemoteSocketAddress()));
             }
         } catch (IOException e) {
-            System.out.println("Error starting the server: " + e.getMessage());
+            Logger.log("Error starting TCP server: " + e.getMessage(), Logger.ERROR);
         }
     }
     public static void broadcast(byte[] bytes, byte from) throws IOException {
@@ -44,17 +44,18 @@ public class TCPClientHandler implements Runnable {
     }
     public static void broadcastPosition(SocketAddress id) {
         try {
-        TCPClientHandler p = clients.get(id);
-        byte id_byte = clients.get(id).getId();
-        byte[] bytes = s2cPlayerMoveBytes(p, id_byte);
+            TCPClientHandler p = clients.get(id);
+            byte id_byte = clients.get(id).getId();
+            byte[] bytes = s2cPlayerMoveBytes(p, id_byte);
 
-        for (TCPClientHandler client : clients.values()) {
-            if(client.getId() != id_byte){
+            for (TCPClientHandler client : clients.values()) {
+                if (client.getId() != id_byte) {
                     client.sendMessage(bytes);
+                }
             }
-        }
-        } catch (IOException|NullPointerException e) {
-            System.out.println("Error closing client socket: " + e.getMessage());
+        } catch (IOException | NullPointerException e) {
+            Logger.log("Error broadcasting position: " + e.getMessage(), Logger.ERROR);
+            exit(-1);
         }
     }
 
@@ -96,18 +97,16 @@ public class TCPClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            System.out.println("Client connected #" + id);
+            Logger.log("Client connected: " + clientSocket.getInetAddress(), Logger.WARNING);
 
             broadcast(new byte[]{S2C_PLAYER_JOIN, id}, id);
             lastUpdate = System.currentTimeMillis();
             output = clientSocket.getOutputStream();
             for (SocketAddress oid : clients.keySet()) {
                 if(clients.get(oid).id != id){
-                    System.out.println(clients.get(oid).id);
                     sendMessage(new byte[]{S2C_PLAYER_JOIN,clients.get(oid).id});
                 }
             }
-            System.out.println("Client handler started for: " + clientSocket.getInetAddress());
 
             InputStream input = clientSocket.getInputStream();
             DataInputStream dis = new DataInputStream(input);
@@ -138,12 +137,11 @@ public class TCPClientHandler implements Runnable {
                             int x = dis.readInt();
                             int y = dis.readInt();
                             int z = dis.readInt();
-                            System.out.println("Sending chunk: " + x + " " + y + " " + z);
                             sendMessage(Server.world.serializeChunk(x, y, z));
                             code = NULL;
                         }
                         case C2S_BLOCK_PLACE -> {
-                            System.out.println("Block placed message with bytes " + toRead);
+                            Logger.log("Block placed", Logger.INFO);
                             ByteArrayOutputStream o = new ByteArrayOutputStream();
                             DataOutputStream dos = new DataOutputStream(o);
                             dos.writeByte(S2C_BLOCK_PLACE);
@@ -161,25 +159,35 @@ public class TCPClientHandler implements Runnable {
                             broadcast(o.toByteArray(), id);
                             code = NULL;
                         }
+                        case C2S_LOG -> {
+                            byte[] data = new byte[toRead];
+                            dis.readFully(data);
+                            byte id = dis.readByte();
+
+                            Logger.log(new String(data), id);
+                            code = NULL;
+                        }
                         default -> code = NULL;
                     }
                 }
             }
         } catch (IOException|NullPointerException e) {
-            System.out.println("Error closing CLIENT socket: " + e.getMessage());
+            Logger.log("Error handling client: " + e.getMessage(), Logger.ERROR);
         }
 
         try {
             output.close();
             clientSocket.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Error closing client socket: " + e.getMessage());
+            System.exit(-1);
         }
     }
 
     public void sendMessage(byte[] message) throws IOException{
         if(output == null) {
-            System.out.println("Output is null");
+            Logger.log("Error sending message: output stream is null", Logger.ERROR);
+            System.exit(-1);
             return;
         }
         output.write(message);
