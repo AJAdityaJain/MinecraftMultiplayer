@@ -33,7 +33,7 @@ public class Loader {
 					new FileInputStream("res/textures/atlas.png"));
 		} catch (Exception e) {
 			System.out.println("Tried to load texture atlas.png , didn't work");
-			System.exit(-1);
+			System.exit(-3);
 		}
 		textures.add(texture.getTextureID());
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -69,7 +69,7 @@ public class Loader {
 			}
 		} catch (IOException e) {
 			System.out.println("Tried to load texture array, didn't work");
-			System.exit(-1);
+			System.exit(-4);
 		}
 		//set the texture parameters, can be GL_LINEAR or GL_NEAREST
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);

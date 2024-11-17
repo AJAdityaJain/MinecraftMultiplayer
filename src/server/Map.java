@@ -113,7 +113,7 @@ public class Map {
         for (int i = -RENDER_DISTANCE; i < RENDER_DISTANCE+1; i ++)
             for (int j = -RENDER_HEIGHT; j < RENDER_HEIGHT+1; j ++)
                 k:for (int k = -RENDER_DISTANCE; k < RENDER_DISTANCE+1; k ++){
-                    if(i * i + k * k <= RENDER_DISTANCE_SQ && i+px >=0 && j + pz >= 0 && k + py >= 0){
+                    if(i * i + k * k <= RENDER_DISTANCE_SQ && i+px >=0 && j + py >= 0 && k + pz >= 0){
                         for (Vector3f v: loadingChunks) {
                             if (v.x == i + px && v.y == j + py && v.z == k + pz) {
                                 continue k;

@@ -99,12 +99,11 @@ public class Client {
 							}
 							if(!b) {
 								Client.log("Received chunk was not requested", Logger.ERROR);
-								System.exit(-1);
+								System.exit(-2);
 							}
 							break;
 						}
 						case S2C_BLOCK_PLACE:{
-							System.out.print("▣");
 							int x = stream.readInt();
 							int y = stream.readInt();
 							int z = stream.readInt();
@@ -167,7 +166,6 @@ public class Client {
 
 		while (!Display.isCloseRequested()) {
 			if(updateMeshData){
-				System.out.println("Updating Mesh from data");
 				updateMeshData = false;
 				if(world_mesh != null) world_mesh.model.clean();
 				world_mesh = new StaticEntity(Mesh.genGreedyMesh(), new Vector3f(0, 0, 0));

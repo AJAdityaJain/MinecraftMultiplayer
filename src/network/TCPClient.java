@@ -40,7 +40,7 @@ public class TCPClient {
 		}
 		catch (IOException e) {
 			System.out.println("Error connecting to server: " + e.getMessage());
-			System.exit(-1);
+			System.exit(-7);
 			throw new RuntimeException("Error connecting to server: " + e.getMessage());
 
 		}
@@ -70,7 +70,7 @@ public class TCPClient {
 
 		} catch (IOException e) {
 			Client.log("Error reading TCP message: " + e.getMessage(), Logger.ERROR);
-			System.exit(-1);
+			System.exit(-8);
 		}
 	}
 
@@ -85,7 +85,7 @@ public class TCPClient {
 		}
 		catch (IOException e){
 			Client.log("Error requesting chunk: " + e.getMessage(), Logger.ERROR);
-			System.exit(-1);
+			System.exit(-9);
 		}
 	}
 
@@ -108,6 +108,7 @@ public class TCPClient {
 
 	public void updateBlock(BlockState state, int x, int y, int z) {
 		try {
+			System.out.print("▣");
 			short sz = (short) (12 + state.getSerializedSize());
 
 			stream.writeByte(C2S_BLOCK_PLACE);
@@ -120,7 +121,7 @@ public class TCPClient {
 			tcp_output.flush();
 		} catch (IOException e) {
 			log("Error sending block update: " + e.getMessage(), Logger.ERROR);
-			System.exit(-1);
+			System.exit(-10);
 		}
 	}
 
@@ -146,7 +147,7 @@ public class TCPClient {
 		}
 		catch (IOException e){
 			log("Error stopping client: " + e.getMessage(), Logger.ERROR);
-			System.exit(-1);
+			System.exit(-11);
 		}
 	}
 

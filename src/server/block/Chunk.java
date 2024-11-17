@@ -140,7 +140,7 @@ public class Chunk {
         }
         catch (Exception e) {
             Client.log("Failed to deserialize chunk", Logger.ERROR);
-            System.exit(-1);
+            System.exit(-16);
         }
         return null;
     }

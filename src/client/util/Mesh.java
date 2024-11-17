@@ -5,11 +5,9 @@ import client.models.VAO;
 import org.lwjgl.util.vector.Vector3f;
 import server.block.BlockState;
 import server.Map;
+import server.block.Chunk;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static server.block.Chunk.CHUNK_SIZE;
 
@@ -42,7 +40,7 @@ class Face{
 
 public class Mesh {
     private static final List<Face> faces = new ArrayList<>();
-    private static byte[][][] visited = new byte[16][16][16];
+    private static byte[][][] visited = null;
     private static final HashMap<Vector3f,Byte> visitedOutside = new HashMap<>();
     private static int chunkX,chunkY,chunkZ;
     private static float[] vertices;
@@ -148,6 +146,11 @@ public class Mesh {
         return vao;
     }
     public static void genGreedyMeshFromMap(Map map) {
+        map.loadedChunks.sort(Comparator
+                .comparingInt((Chunk c) -> c.chunkX)
+                .thenComparingInt(c -> c.chunkY)
+                .thenComparingInt(c -> c.chunkZ));
+
         faces.clear();
 
         for (int i = 0; i < map.loadedChunks.size(); i ++) {
@@ -195,8 +198,7 @@ public class Mesh {
                 }
             }
         }
-
-        System.out.println(" WHAT IS THIS MEAN" + visitedOutside.size());
+        assert visitedOutside.isEmpty();
 
         visited = null;
         vertices = new float[faces.size() * 12];

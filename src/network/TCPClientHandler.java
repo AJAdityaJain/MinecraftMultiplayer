@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static java.lang.System.exit;
 import static network.NetworkConstants.*;
 
 public class TCPClientHandler implements Runnable {
@@ -55,7 +54,7 @@ public class TCPClientHandler implements Runnable {
             }
         } catch (IOException | NullPointerException e) {
             Logger.log("Error broadcasting position: " + e.getMessage(), Logger.ERROR);
-            exit(-1);
+            System.exit(-12);
         }
     }
 
@@ -180,14 +179,14 @@ public class TCPClientHandler implements Runnable {
             clientSocket.close();
         } catch (IOException e) {
             System.out.println("Error closing client socket: " + e.getMessage());
-            System.exit(-1);
+            System.exit(-13);
         }
     }
 
     public void sendMessage(byte[] message) throws IOException{
         if(output == null) {
             Logger.log("Error sending message: output stream is null", Logger.ERROR);
-            System.exit(-1);
+            System.exit(-14);
             return;
         }
         output.write(message);

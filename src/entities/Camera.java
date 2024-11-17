@@ -60,7 +60,7 @@ public class Camera extends DynamicEntity{
 	}
 
 	public Camera(){
-        super(null, new Vector3f(16 * 10,14f,16*10), new Vector3f(.6f,1.8f,.6f), 0, 160 * 3.14f/180, 0, 6.5f);
+        super(null, new Vector3f(88,14f,93), new Vector3f(.6f,1.8f,.6f), 0, 160 * 3.14f/180, 0, 6.5f);
     }
 
 	public boolean input(Map world, TCPClient client, float delta_time) {

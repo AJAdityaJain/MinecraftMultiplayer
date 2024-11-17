@@ -98,7 +98,7 @@ public abstract class ShaderProgram {
 			reader.close();
 		}catch(IOException e){
 			System.out.println("Could not read shader file!");
-			System.exit(-1);
+			System.exit(-5);
 		}
 		int shaderID = GL20.glCreateShader(type);
 		GL20.glShaderSource(shaderID, shaderSource);
@@ -106,7 +106,7 @@ public abstract class ShaderProgram {
         //noinspection deprecation
         if(GL20.glGetShader(shaderID, GL20.GL_COMPILE_STATUS )== GL11.GL_FALSE){
 			System.out.println(GL20.glGetShaderInfoLog(shaderID, 500) + "\nCould not compile shader!");
-			System.exit(-1);
+			System.exit(-6);
 		}
 		return shaderID;
 	}

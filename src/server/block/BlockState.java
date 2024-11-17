@@ -35,7 +35,7 @@ public class BlockState {
                 return 2;
             default:
                 Client.log("BlockState.getSlice() called on non-textured block", Logger.ERROR);
-                System.exit(-1);
+                System.exit(-15);
                 return -1;
         }
     }
