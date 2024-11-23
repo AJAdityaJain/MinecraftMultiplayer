@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import static network.NetworkConstants.*;
+import static server.block.Chunk.CHUNK_SIZE;
 
 
 public class Client {
@@ -38,10 +39,6 @@ public class Client {
 	public static void log(String s,byte lvl){
 		tcp_client.log(s, lvl);
 
-	}
-
-	public static void addChunk(Chunk chunk) {
-		world.addChunk(chunk);
 	}
 
 	public static void main(String[] args) throws InterruptedException {
@@ -89,7 +86,8 @@ public class Client {
 							byte[] data = new byte[toRead];
 							stream.readFully(data);
 							Chunk ch = Chunk.deserialize(data);
-							Client.addChunk(ch);
+							world.addChunk(ch);
+
 							boolean b = false;
 							for (Vector3f v : world.loadingChunks){
 								if (v.x == ch.chunkX && v.y == ch.chunkY && v.z == ch.chunkZ){
@@ -98,6 +96,10 @@ public class Client {
 								}
 							}
 							if(!b) {
+								for (Vector3f v : world.loadingChunks) {
+									System.out.println(v.x + " " + v.y + " " + v.z);
+								}
+								System.out.println(ch.chunkX + " " + ch.chunkY + " " + ch.chunkZ + " was not requested");
 								Client.log("Received chunk was not requested", Logger.ERROR);
 								System.exit(-2);
 							}
@@ -134,17 +136,15 @@ public class Client {
 				}
 		);
 
-		int px = (int)(player.getPosition().x/16);
-		int py = (int)(player.getPosition().y/16);
-		int pz = (int)(player.getPosition().z/16);
+		int px = (int)(player.getPosition().x/CHUNK_SIZE);
+		int py = (int)(player.getPosition().y/CHUNK_SIZE);
+		int pz = (int)(player.getPosition().z/CHUNK_SIZE);
 		world.tryLoad(px, py, pz, tcp_client);
 
 
 		DisplayManager.createDisplay();
 		Loader.loadTexture();
 		renderer = new Renderer(new StaticShader());
-
-		Thread.sleep(100);
 		mainLoop();
 
 		tcp_client.stop();
@@ -154,6 +154,10 @@ public class Client {
 	}
 
 	private static void mainLoop() {
+		while(world.loadedChunks.isEmpty()){
+			continue;
+		}
+		updateMesh=true;
 //		Mesh.genGreedyMeshFromMap(world);
 		StaticEntity world_mesh = null;
 		VAO cube_model = Mesh.genCubeMesh();
@@ -196,9 +200,9 @@ public class Client {
 
 			frame_idx_k += 1000;
 			if (frame_idx_k == samples) {
-				int px = (int)(player.getPosition().x/16);
-				int py = (int)(player.getPosition().y/16);
-				int pz = (int)(player.getPosition().z/16);
+				int px = (int)(player.getPosition().x/CHUNK_SIZE);
+				int py = (int)(player.getPosition().y/CHUNK_SIZE);
+				int pz = (int)(player.getPosition().z/CHUNK_SIZE);
 				updateMesh = world.tryUnload(px, py, pz);
 				if(updateMesh) world.tryLoad(px, py, pz, tcp_client);
 

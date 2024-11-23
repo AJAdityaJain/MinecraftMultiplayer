@@ -4,7 +4,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.*;
 
 public class DisplayManager {
-	public static final int RENDER_DISTANCE = 1;
+	public static final int RENDER_DISTANCE = 2;
 	public static final int RENDER_HEIGHT = 0;
 	public static final int RENDER_DISTANCE_SQ = RENDER_DISTANCE*RENDER_DISTANCE;
 	public static final int FPS_CAP = 600;
@@ -32,11 +32,11 @@ public class DisplayManager {
 
 		Display.setTitle("Client");
 		GL11.glViewport(0,0, org.lwjgl.opengl.Display.getWidth(), org.lwjgl.opengl.Display.getHeight());
-		GL11.glClearColor(.2f,.1f, .2f, 1);
+		GL11.glClearColor(.05f,.04f, .05f, 1);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 
-//		GL11.glEnable(GL11.GL_CULL_FACE);
-		GL11.glPolygonMode( GL11.GL_FRONT_AND_BACK, GL11.GL_LINE );
+		GL11.glEnable(GL11.GL_CULL_FACE);
+//		GL11.glPolygonMode( GL11.GL_FRONT_AND_BACK, GL11.GL_LINE );
 
 		GL11.glCullFace(GL11.GL_BACK);
 		GL11.glFrontFace(GL11.GL_CCW);

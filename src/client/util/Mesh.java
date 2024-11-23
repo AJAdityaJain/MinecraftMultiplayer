@@ -41,7 +41,6 @@ class Face{
 public class Mesh {
     private static final List<Face> faces = new ArrayList<>();
     private static byte[][][] visited = null;
-    private static final HashMap<Vector3f,Byte> visitedOutside = new HashMap<>();
     private static int chunkX,chunkY,chunkZ;
     private static float[] vertices;
     private static float[] textureCoords;
@@ -157,22 +156,7 @@ public class Mesh {
             chunkX = map.loadedChunks.get(i).chunkX;
             chunkY = map.loadedChunks.get(i).chunkY;
             chunkZ = map.loadedChunks.get(i).chunkZ;
-
-            visited = new byte[16][16][16];
-
-            Iterator<java.util.Map.Entry<Vector3f,Byte>> iterator = visitedOutside.entrySet().iterator();
-
-            while (iterator.hasNext()){
-                java.util.Map.Entry<Vector3f, Byte> entry = iterator.next();
-                Vector3f k = entry.getKey();
-                if(k.x >= chunkX*CHUNK_SIZE && k.x < (chunkX+1)*CHUNK_SIZE && k.y >= chunkY*CHUNK_SIZE && k.y < (chunkY+1)*CHUNK_SIZE && k.z >= chunkZ*CHUNK_SIZE && k.z < (chunkZ+1)*CHUNK_SIZE) {
-                    visited[(int) (k.x - chunkX*CHUNK_SIZE)][(int) (k.y - chunkY*CHUNK_SIZE)][(int) (k.z - chunkZ*CHUNK_SIZE)] = entry.getValue();
-                    iterator.remove();
-                }
-
-            }
-
-
+            visited = new byte[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
             for (int x = chunkX*CHUNK_SIZE; x < (chunkX+1)*CHUNK_SIZE; x++) {
                 for (int y = chunkY*CHUNK_SIZE; y < (chunkY+1)*CHUNK_SIZE; y++) {
                     for (int z = chunkZ*CHUNK_SIZE; z < (chunkZ+1)*CHUNK_SIZE; z++) {
@@ -198,7 +182,6 @@ public class Mesh {
                 }
             }
         }
-        assert visitedOutside.isEmpty();
 
         visited = null;
         vertices = new float[faces.size() * 12];
@@ -208,7 +191,8 @@ public class Mesh {
         int v = 0;
         int t = 0;
         int i = 0;
-        for (Face f : faces) {
+        for (Face f : faces)
+        {
             switch(f.faceType ) {
                 case FaceType.TOP:{
                     vertices[v] = f.x;
@@ -495,13 +479,7 @@ public class Mesh {
         x -= chunkX*CHUNK_SIZE;
         y -= chunkY*CHUNK_SIZE;
         z -= chunkZ*CHUNK_SIZE;
-        if(x < 0 || x >= 16 || y < 0 || y >= 16 || z < 0 || z >= 16) {
-            Vector3f pos = new Vector3f(x + chunkX*CHUNK_SIZE,y+chunkY*CHUNK_SIZE,z+chunkZ*CHUNK_SIZE);
-            if(visitedOutside.containsKey(pos)) {
-                visitedOutside.put(pos, (byte) (visitedOutside.get(pos) | (1 << axis.ordinal())));
-            } else {
-                visitedOutside.put(pos, (byte) (1 << axis.ordinal()));
-            }
+        if(x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
             return;
         }
         visited[x][y][z] = (byte) (visited[x][y][z] | (1 << axis.ordinal()));
@@ -510,9 +488,8 @@ public class Mesh {
         x -= chunkX*CHUNK_SIZE;
         y -= chunkY*CHUNK_SIZE;
         z -= chunkZ*CHUNK_SIZE;
-        if(x < 0 || x >= 16 || y < 0 || y >= 16 || z < 0 || z >= 16) {
-            Vector3f pos = new Vector3f(x + chunkX*CHUNK_SIZE,y+chunkY*CHUNK_SIZE,z+chunkZ*CHUNK_SIZE);
-            return !visitedOutside.containsKey(pos) || (visitedOutside.get(pos) & (1 << axis.ordinal())) == 0;
+        if(x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+            return false;
         }
         return (visited[x][y][z] & (1 << axis.ordinal())) == 0;
     }

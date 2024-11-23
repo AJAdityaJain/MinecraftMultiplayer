@@ -5,11 +5,9 @@ import org.lwjgl.util.vector.Vector3f;
 import server.block.BlockState;
 import server.block.Chunk;
 
-import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static client.rendering.DisplayManager.*;
-import static network.NetworkConstants.S2C_CHUNK_SEND;
 
 public class Map {
     public final CopyOnWriteArrayList<Vector3f> loadingChunks = new CopyOnWriteArrayList<>();
@@ -21,24 +19,6 @@ public class Map {
     public void addChunk(Chunk chunk){
         loadedChunks.add(chunk);
         cached = chunk;
-    }
-
-    void loadChunks() {
-        // Load the first chunk
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 16; j++) {
-                loadedChunks.add(new Chunk(i, 0, j));
-                loadedChunks.getLast().generate();
-            }
-        }
-        cached = loadedChunks.getFirst();
-    }
-
-    void loadChunk(int x, int y, int z) {
-        // Load the first chunk
-        loadedChunks.add(new Chunk(x,y,z));
-        loadedChunks.getLast().generate();
-        cached = loadedChunks.getLast();
     }
 
     public void setBlock(int x, int y, int z, BlockState state){
@@ -85,25 +65,13 @@ public class Map {
         return getBlock(x, y, z).blockType == BlockState.BlockEnum.AIR;
     }
 
-    public byte[] serializeChunk(int x, int y, int z) throws IOException {
-        if(cached.chunkX == x && cached.chunkY == y && cached.chunkZ == z){
-            return cached.serialize(S2C_CHUNK_SEND);
-        }
-        for(Chunk c : loadedChunks){
-            if(c.chunkX == x && c.chunkY == y && c.chunkZ == z){
-                return c.serialize(S2C_CHUNK_SEND);
-            }
-        }
-        loadChunk(x,y,z);
-        return cached.serialize(S2C_CHUNK_SEND);
-    }
-
     public boolean tryUnload(int px, int py, int pz) {
         boolean ret = false;
         for (Chunk c : loadedChunks) {
             if ((c.chunkX - px) * (c.chunkX - px) + (c.chunkY - py) * (c.chunkY - py) + (c.chunkZ - pz) * (c.chunkZ - pz) > RENDER_DISTANCE_SQ) {
                 ret = true;
                 loadedChunks.remove(c);
+                cached = loadedChunks.getFirst();
             }
         }
         return ret;
@@ -113,7 +81,8 @@ public class Map {
         for (int i = -RENDER_DISTANCE; i < RENDER_DISTANCE+1; i ++)
             for (int j = -RENDER_HEIGHT; j < RENDER_HEIGHT+1; j ++)
                 k:for (int k = -RENDER_DISTANCE; k < RENDER_DISTANCE+1; k ++){
-                    if(i * i + k * k <= RENDER_DISTANCE_SQ && i+px >=0 && j + py >= 0 && k + pz >= 0){
+                    int d = i * i + j * j + k * k;
+                    if(d <= RENDER_DISTANCE_SQ && i+px >=0 && j + py >= 0 && k + pz >= 0){
                         for (Vector3f v: loadingChunks) {
                             if (v.x == i + px && v.y == j + py && v.z == k + pz) {
                                 continue k;
@@ -124,7 +93,8 @@ public class Map {
                                 continue k;
                             }
                         }
-                        tcp_client.requestChunk(i+px, j + py, k+pz);
+                        tcp_client.requestChunk(i+px, j + py, k+pz);//Math.floor((4.99f*d)/RENDER_DISTANCE_SQ));
+                        System.out.println("Requested chunk: " + (i+px) + " " + (j + py) + " " + (k+pz));
                         loadingChunks.add(new Vector3f(i+px, j + py, k+pz));
                     }
                 }

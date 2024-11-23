@@ -13,7 +13,7 @@ import static network.TCPClientHandler.clients;
 
 
 public class Server {
-	public static final Map world = new Map();
+	public static final MapWriter world = new MapWriter();
 	public static final int TPS = 20;
 	public static final int TICK_TIME = 1000 / TPS;
 
