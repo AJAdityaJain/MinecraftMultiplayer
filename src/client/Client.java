@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import static network.NetworkConstants.*;
-import static server.block.Chunk.CHUNK_SIZE;
 
 
 public class Client {
@@ -101,7 +100,7 @@ public class Client {
 								}
 								System.out.println(ch.chunkX + " " + ch.chunkY + " " + ch.chunkZ + " was not requested");
 								Client.log("Received chunk was not requested", Logger.ERROR);
-								System.exit(-2);
+//								System.exit(-2);
 							}
 							break;
 						}
@@ -136,9 +135,9 @@ public class Client {
 				}
 		);
 
-		int px = (int)(player.getPosition().x/CHUNK_SIZE);
-		int py = (int)(player.getPosition().y/CHUNK_SIZE);
-		int pz = (int)(player.getPosition().z/CHUNK_SIZE);
+		int px = (int)(player.getPosition().x/16);
+		int py = (int)(player.getPosition().y/16);
+		int pz = (int)(player.getPosition().z/16);
 		world.tryLoad(px, py, pz, tcp_client);
 
 
@@ -178,10 +177,10 @@ public class Client {
 				updateMesh = true;
 			}
 			Vector3f v = player.getVelocity();
-			cameraCollision(v.x * delta_time, 0);
-			cameraCollision(v.y * delta_time, 1);
-			cameraCollision(v.z * delta_time, 2);
-			cameraOnGround();
+//			cameraCollision(v.x * delta_time, 0);
+//			cameraCollision(v.y * delta_time, 1);
+//			cameraCollision(v.z * delta_time, 2);
+//			cameraOnGround();
 			player.tick(delta_time);
 
 			renderer.prepare(player);
@@ -200,9 +199,9 @@ public class Client {
 
 			frame_idx_k += 1000;
 			if (frame_idx_k == samples) {
-				int px = (int)(player.getPosition().x/CHUNK_SIZE);
-				int py = (int)(player.getPosition().y/CHUNK_SIZE);
-				int pz = (int)(player.getPosition().z/CHUNK_SIZE);
+				int px = (int)(player.getPosition().x/16);
+				int py = (int)(player.getPosition().y/16);
+				int pz = (int)(player.getPosition().z/16);
 				updateMesh = world.tryUnload(px, py, pz);
 				if(updateMesh) world.tryLoad(px, py, pz, tcp_client);
 

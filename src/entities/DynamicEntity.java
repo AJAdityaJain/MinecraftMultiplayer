@@ -8,7 +8,7 @@ public class DynamicEntity extends Entity {
     protected final Vector3f hitBox;
     protected final Vector3f velocity = new Vector3f(0, 0, 0);
     protected final Vector3f acceleration = new Vector3f(0, 0, 0);
-    protected static final float g = 32.656f;//Minecraft accurate units
+    protected static final float g = 0;//32.656f;//Minecraft accurate units
     public boolean onGround = false;
     protected final float speed;
 

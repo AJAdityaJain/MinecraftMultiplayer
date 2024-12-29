@@ -1,7 +1,9 @@
 package client.util;
 
+import client.Client;
 import client.models.Loader;
 import client.models.VAO;
+import network.Logger;
 import org.lwjgl.util.vector.Vector3f;
 import server.block.BlockState;
 import server.Map;
@@ -9,7 +11,7 @@ import server.block.Chunk;
 
 import java.util.*;
 
-import static server.block.Chunk.CHUNK_SIZE;
+
 
 enum FaceType{
     TOP,
@@ -20,7 +22,9 @@ enum FaceType{
     BACK
 }
 class Face{
-    public final float x, y, z;
+    public float x;
+    public float y;
+    public float z;
     public final int slice;
     public final FaceType faceType;
 
@@ -42,6 +46,7 @@ public class Mesh {
     private static final List<Face> faces = new ArrayList<>();
     private static byte[][][] visited = null;
     private static int chunkX,chunkY,chunkZ;
+    private static int size;
     private static float[] vertices;
     private static float[] textureCoords;
     private static int[] indices;
@@ -152,14 +157,18 @@ public class Mesh {
 
         faces.clear();
 
+        int alreadySeen = 0;
         for (int i = 0; i < map.loadedChunks.size(); i ++) {
             chunkX = map.loadedChunks.get(i).chunkX;
             chunkY = map.loadedChunks.get(i).chunkY;
             chunkZ = map.loadedChunks.get(i).chunkZ;
-            visited = new byte[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-            for (int x = chunkX*CHUNK_SIZE; x < (chunkX+1)*CHUNK_SIZE; x++) {
-                for (int y = chunkY*CHUNK_SIZE; y < (chunkY+1)*CHUNK_SIZE; y++) {
-                    for (int z = chunkZ*CHUNK_SIZE; z < (chunkZ+1)*CHUNK_SIZE; z++) {
+            size = map.loadedChunks.get(i).size;
+            int step = 16/size;
+
+            visited = new byte[size][size] [size];
+            for (int x = chunkX*16; x < chunkX*16 + size; x++) {
+                for (int y = chunkY*16; y < chunkY*16 + size; y++) {
+                    for (int z = chunkZ*16; z < chunkZ*16 + size; z++) {
                         if (tryStart(map, FaceType.RIGHT, x, y, z)) {
                             xAxisSearch(map, x, y, z, FaceType.RIGHT);
                         }
@@ -181,12 +190,28 @@ public class Mesh {
                     }
                 }
             }
+
+            //Scale up all faces not seen in the faces list by a factor of lod
+            for(int j = alreadySeen; j < faces.size(); j++){
+                Face f = faces.get(j);
+                f.x = (f.x%16)*step +16*(int)Math.floor(f.x/16);
+                f.y = (f.y%16)*step +16*(int)Math.floor(f.y/16);
+                f.z = (f.z%16)*step +16*(int)Math.floor(f.z/16);
+                f.width *= step;
+                f.height *= step;
+                if(f.faceType == FaceType.TOP)f.y += step;
+                if(f.faceType == FaceType.RIGHT)f.x += step;
+                if(f.faceType == FaceType.FRONT)f.z += step;
+            }
+            alreadySeen = faces.size();
         }
+
 
         visited = null;
         vertices = new float[faces.size() * 12];
         textureCoords = new float[faces.size() * 12];
         indices = new int[faces.size() * 6];
+
 
         int v = 0;
         int t = 0;
@@ -196,16 +221,16 @@ public class Mesh {
             switch(f.faceType ) {
                 case FaceType.TOP:{
                     vertices[v] = f.x;
-                    vertices[v + 1] = f.y + 1;
+                    vertices[v + 1] = f.y;
                     vertices[v + 2] = f.z + f.height;
                     vertices[v + 3] = f.x;
-                    vertices[v + 4] = f.y + 1;
+                    vertices[v + 4] = f.y;
                     vertices[v + 5] = f.z;
                     vertices[v + 6] = f.x + f.width;
-                    vertices[v + 7] = f.y + 1;
+                    vertices[v + 7] = f.y;
                     vertices[v + 8] = f.z;
                     vertices[v + 9] = f.x + f.width;
-                    vertices[v + 10] = f.y + 1;
+                    vertices[v + 10] = f.y;
                     vertices[v + 11] = f.z + f.height;
 
                     addUV(textureCoords,f,t,f.slice);
@@ -243,16 +268,16 @@ public class Mesh {
                     break;
                 }
                 case FaceType.RIGHT:{
-                    vertices[v] = f.x + 1;
+                    vertices[v] = f.x;
                     vertices[v + 1] = f.y + f.height;
                     vertices[v + 2] = f.z;
-                    vertices[v + 3] = f.x + 1;
+                    vertices[v + 3] = f.x;
                     vertices[v + 4] = f.y;
                     vertices[v + 5] = f.z;
-                    vertices[v + 6] = f.x + 1;
+                    vertices[v + 6] = f.x;
                     vertices[v + 7] = f.y;
                     vertices[v + 8] = f.z + f.width;
-                    vertices[v + 9] = f.x + 1;
+                    vertices[v + 9] = f.x;
                     vertices[v + 10] = f.y + f.height;
                     vertices[v + 11] = f.z + f.width;
 
@@ -293,16 +318,16 @@ public class Mesh {
                 case FaceType.FRONT:{
                     vertices[v] = f.x;
                     vertices[v + 1] = f.y + f.height;
-                    vertices[v + 2] = f.z + 1;
+                    vertices[v + 2] = f.z;
                     vertices[v + 3] = f.x;
                     vertices[v + 4] = f.y;
-                    vertices[v + 5] = f.z + 1;
+                    vertices[v + 5] = f.z;
                     vertices[v + 6] = f.x + f.width;
                     vertices[v + 7] = f.y;
-                    vertices[v + 8] = f.z + 1;
+                    vertices[v + 8] = f.z;
                     vertices[v + 9] = f.x + f.width;
                     vertices[v + 10] = f.y + f.height;
-                    vertices[v + 11] = f.z + 1;
+                    vertices[v + 11] = f.z;
 
                     addUV(textureCoords,f,t,f.slice);
 
@@ -476,19 +501,19 @@ public class Mesh {
         textureCoords[t + 11] = slice;
     }
     static void visit(FaceType axis, int x, int y, int z) {
-        x -= chunkX*CHUNK_SIZE;
-        y -= chunkY*CHUNK_SIZE;
-        z -= chunkZ*CHUNK_SIZE;
-        if(x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
-            return;
+        x -= chunkX*16;
+        y -= chunkY*16;
+        z -= chunkZ*16;
+        if(x < 0 || x >= size || y < 0 || y >= size || z < 0 || z >= size) {
+            throw new IllegalArgumentException("Out of bounds");
         }
         visited[x][y][z] = (byte) (visited[x][y][z] | (1 << axis.ordinal()));
     }
     static boolean hasNotBeenVisited(FaceType axis, int x, int y, int z) {
-        x -= chunkX*CHUNK_SIZE;
-        y -= chunkY*CHUNK_SIZE;
-        z -= chunkZ*CHUNK_SIZE;
-        if(x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+        x -= chunkX*16;
+        y -= chunkY*16;
+        z -= chunkZ*16;
+        if(x < 0 || x >= size || y < 0 || y >= size || z < 0 || z >= size) {
             return false;
         }
         return (visited[x][y][z] & (1 << axis.ordinal())) == 0;

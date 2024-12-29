@@ -15,7 +15,7 @@ public class MapWriter {
         // Load the first chunk
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                loadedChunks.add(new Chunk(i, 0, j));
+                loadedChunks.add(new Chunk(i, 0, j,0));
                 loadedChunks.getLast().generate();
             }
         }
@@ -23,17 +23,17 @@ public class MapWriter {
 
     void loadChunk(int x, int y, int z) {
         // Load the first chunk
-        loadedChunks.add(new Chunk(x,y,z));
+        loadedChunks.add(new Chunk(x,y,z,0));
         loadedChunks.getLast().generate();
     }
 
     public void setBlock(int x, int y, int z, BlockState state){
-        int X = x / Chunk.CHUNK_SIZE;
-        int Y = y / Chunk.CHUNK_SIZE;
-        int Z = z / Chunk.CHUNK_SIZE;
-        x = x % Chunk.CHUNK_SIZE;
-        y = y % Chunk.CHUNK_SIZE;
-        z = z % Chunk.CHUNK_SIZE;
+        int X = x / 16;
+        int Y = y / 16;
+        int Z = z / 16;
+        x = x % 16;
+        y = y % 16;
+        z = z % 16;
 
         for(Chunk c : loadedChunks){
             if(c.chunkX == X && c.chunkY == Y && c.chunkZ == Z){
@@ -44,12 +44,12 @@ public class MapWriter {
     }
 
     public BlockState getBlock(int x, int y, int z){
-        int X = x / Chunk.CHUNK_SIZE;
-        int Y = y / Chunk.CHUNK_SIZE;
-        int Z = z / Chunk.CHUNK_SIZE;
-        x = x % Chunk.CHUNK_SIZE;
-        y = y % Chunk.CHUNK_SIZE;
-        z = z % Chunk.CHUNK_SIZE;
+        int X = x / 16;
+        int Y = y / 16;
+        int Z = z / 16;
+        x = x % 16;
+        y = y % 16;
+        z = z % 16;
 
         for(Chunk c : loadedChunks){
             if(c.chunkX == X && c.chunkY == Y && c.chunkZ == Z){
@@ -66,10 +66,10 @@ public class MapWriter {
     public byte[] serializeChunk(int x, int y, int z) throws IOException {
         for(Chunk c : loadedChunks){
             if(c.chunkX == x && c.chunkY == y && c.chunkZ == z){
-                return c.serialize(S2C_CHUNK_SEND);
+                return c.serialize(S2C_CHUNK_SEND,1);
             }
         }
         loadChunk(x,y,z);
-        return loadedChunks.getLast().serialize(S2C_CHUNK_SEND);
+        return loadedChunks.getLast().serialize(S2C_CHUNK_SEND,1);
     }
 }

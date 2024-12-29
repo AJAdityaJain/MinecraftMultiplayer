@@ -1,5 +1,6 @@
 package server;
 
+import network.Logger;
 import network.TCPClient;
 import org.lwjgl.util.vector.Vector3f;
 import server.block.BlockState;
@@ -10,7 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import static client.rendering.DisplayManager.*;
 
 public class Map {
-    public final CopyOnWriteArrayList<Vector3f> loadingChunks = new CopyOnWriteArrayList<>();
+    public final CopyOnWriteArrayList<Vector3f>  loadingChunks = new CopyOnWriteArrayList<>();
     public final CopyOnWriteArrayList<Chunk> loadedChunks = new CopyOnWriteArrayList<>();
     private Chunk cached;
 
@@ -22,12 +23,12 @@ public class Map {
     }
 
     public void setBlock(int x, int y, int z, BlockState state){
-        int X = x / Chunk.CHUNK_SIZE;
-        int Y = y / Chunk.CHUNK_SIZE;
-        int Z = z / Chunk.CHUNK_SIZE;
-        x = x % Chunk.CHUNK_SIZE;
-        y = y % Chunk.CHUNK_SIZE;
-        z = z % Chunk.CHUNK_SIZE;
+        int X = x / 16;
+        int Y = y / 16;
+        int Z = z / 16;
+        x = x % 16;
+        y = y % 16;
+        z = z % 16;
         if(cached.chunkX == X && cached.chunkY == Y && cached.chunkZ == Z){
             cached.setBlock(x, y, z, state);
             return;
@@ -42,23 +43,73 @@ public class Map {
     }
 
     public BlockState getBlock(int x, int y, int z){
-        int X = x / Chunk.CHUNK_SIZE;
-        int Y = y / Chunk.CHUNK_SIZE;
-        int Z = z / Chunk.CHUNK_SIZE;
-        x = x % Chunk.CHUNK_SIZE;
-        y = y % Chunk.CHUNK_SIZE;
-        z = z % Chunk.CHUNK_SIZE;
-        if(cached.chunkX == X && cached.chunkY == Y && cached.chunkZ == Z){
-            return cached.getBlock(x, y, z);
-        }
+        int X = x / 16;
+        int Y = y / 16;
+        int Z = z / 16;
+
+        x = x % 16;
+        y = y % 16;
+        z = z % 16;
+//        if(cached.chunkX == X && cached.chunkY == Y && cached.chunkZ == Z){
+//            return cached.getBlock(x, y, z);
+//        }
 
         for(Chunk c : loadedChunks){
             if(c.chunkX == X && c.chunkY == Y && c.chunkZ == Z){
-                cached = c;
-                return c.getBlock(x, y, z);
+                int sz = c.size;
+                boolean p = true;
+                if(sz > 8)         System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaHUH " + sz);
+                if(x >= sz) {
+                    x -= sz;
+                    X += 1;
+                    p = false;
+                }
+                if(y >= sz) {
+                    y -= sz;
+                    Y += 1;
+                    p = false;
+                }
+                if(z >= sz) {
+                    z -= sz;
+                    Z += 1;
+                    p = false;
+                }
+
+                if(x < 0 ) {
+                    X -= 1;
+                    p = false;
+                }
+                if(y < 0){
+                    Y -= 1;
+                    p = false;
+                }
+                if(z < 0){
+                    Z -= 1;
+                    p = false;
+                }
+
+                if(p)return c.getBlock(x, y, z);
+                else {
+                    for(Chunk c1 : loadedChunks){
+                        if(c1.chunkX == X && c1.chunkY == Y && c1.chunkZ == Z) {
+                            if(x < 0){
+                                x += c1.size;
+                            }
+                            if(y < 0){
+                                y += c1.size;
+                            }
+                            if( z < 0){
+                                z += c1.size;
+                            }
+                            return c1.getBlock(x, y, z);
+                        }
+                    }
+                    break;
+                }
             }
         }
-        return new BlockState(BlockState.BlockEnum.NONE);
+//        System.out.println(x + "[]" + y + "{]" + z);
+        return new BlockState(BlockState.BlockEnum.STONE);
     }
 
     public boolean isAir(int x, int y, int z){

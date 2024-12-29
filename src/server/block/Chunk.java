@@ -10,35 +10,42 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Chunk {
-    public static final int CHUNK_SIZE = 16;
     private static final FastNoiseLite noise = new FastNoiseLite();
 
 
-    private final byte[][][] blocks = new byte[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+    public final int size;
+    private final byte[][][] blocks;
     public final int chunkX, chunkY, chunkZ;
 
     //Max size 256
     private final ArrayList<BlockState> dictionary = new ArrayList<>();
 
-    public Chunk(int x , int y, int z) {
+    public Chunk(int x , int y, int z, int LOD) {
         chunkX = x;
         chunkY = y;
         chunkZ = z;
+        size = 16 >> LOD;
+        blocks = new byte[size][size][size];
     }
 
     private int genBlock(int x, int y, int z) {
-        double Continentals = Math.pow(1.3,4 + noise.GetNoise (x + CHUNK_SIZE*chunkX,z + CHUNK_SIZE*chunkZ)*4);
-        int surface = Math.clamp((int) Continentals, 0, 16);
-        if( y == surface) {
-            return 3;
+        if(size == 16){
+            double Continentals = Math.pow(1.3,4 + noise.GetNoise (x + size*chunkX,z + size*chunkZ)*4);
+            int surface = Math.clamp((int) Continentals, 0, 16);
+            if( y == surface) {
+                return 3;
+            }
+            else if(surface-y <3 && surface-y > 0) {
+                return 2;
+            }
+            else if(y < surface) {
+                return 1;
+            }
+            return 0;
         }
-        else if(surface-y <3 && surface-y > 0) {
-            return 2;
+        else{
+            throw new UnsupportedOperationException("Not implemented");
         }
-        else if(y < surface) {
-            return 1;
-        }
-        return 0;
     }
     public void generate(){
         noise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
@@ -48,17 +55,25 @@ public class Chunk {
         dictionary.add(new BlockState(BlockState.BlockEnum.DIRT));
         dictionary.add(new BlockState(BlockState.BlockEnum.GRASS));
         new Random();
-        for(int i = 0; i < CHUNK_SIZE; i++) {
-            for(int j = 0; j < CHUNK_SIZE; j++) {
-                for(int k = 0; k < CHUNK_SIZE; k++) {
+        for(int i = 0; i < 16; i++) {
+            for(int j = 0; j < 16; j++) {
+                for(int k = 0; k < 16; k++) {
                     blocks[i][j][k] = (byte) genBlock(i, j, k);
                 }
             }
         }
+
+//        for( int i = 0; i < 16; i ++){
+//            for(int k = 0; k < 16; k ++){
+//                if(0!= (i+k)%3)
+//                    blocks[i][0][k] = 1;
+//            }
+//        }
     }
 
+    //local coordinates
     public void setBlock(int x, int y, int z, BlockState state) {
-        if(x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+        if(x < 0 || x >= size || y < 0 || y >= size || z < 0 || z >= size) {
             return;
         }
         if(!dictionary.contains(state)) {
@@ -67,15 +82,21 @@ public class Chunk {
         blocks[x][y][z] = (byte) dictionary.indexOf(state);
     }
 
+    //local coordinates
     public BlockState getBlock(int x, int y, int z) {
-        if(x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+        if(x < 0 || x >= size || y < 0 || y >= size || z < 0 || z >= size) {
+            System.out.println(x+ ", "+ y + ", " + z);
+            System.out.println(1/0);
             return new BlockState(BlockState.BlockEnum.NONE);
         }
         return dictionary.get(blocks[x][y][z]);
     }
 
 
-    public byte[] serialize(byte type) throws IOException {
+    public byte[] serialize(byte type, int LOD_target) throws IOException {
+        if(size!= 16){
+            throw new UnsupportedOperationException("Not implemented");
+        }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
 
@@ -84,14 +105,18 @@ public class Chunk {
         dos.writeByte(0);
 
         // Write chunk coordinates
+        dos.writeByte(LOD_target);
         dos.writeInt(chunkX);
         dos.writeInt(chunkY);
         dos.writeInt(chunkZ);
 
         // Write block data (16x16x16 bytes)
-        for (int i = 0; i < CHUNK_SIZE; i++) {
-            for (int j = 0; j < CHUNK_SIZE; j++) {
-                dos.write(blocks[i][j]);
+        int sz = 16 >> LOD_target;
+        for (int i = 0; i < sz; i++) {
+            for (int j = 0; j < sz; j++) {
+                for (int k = 0; k < sz; k++) {
+                    dos.write(blocks[i][j][k]);
+                }
             }
         }
 
@@ -115,15 +140,16 @@ public class Chunk {
             DataInputStream dis = new DataInputStream(bis);
 
             // Read chunk coordinates
+            int LOD = dis.readByte();
             int chunkX = dis.readInt();
             int chunkY = dis.readInt();
             int chunkZ = dis.readInt();
 
-            Chunk chunk = new Chunk(chunkX, chunkY, chunkZ);
+            Chunk chunk = new Chunk(chunkX, chunkY, chunkZ, LOD);
 
             // Read block data (16x16x16 bytes)
-            for (int i = 0; i < CHUNK_SIZE; i++) {
-                for (int j = 0; j < CHUNK_SIZE; j++) {
+            for (int i = 0; i < chunk.size; i++) {
+                for (int j = 0; j < chunk.size; j++) {
                     dis.readFully(chunk.blocks[i][j]);
                 }
             }
